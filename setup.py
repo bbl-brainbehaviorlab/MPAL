@@ -1,14 +1,13 @@
 import setuptools
 
 setuptools.setup(
-    name="MotionTRAJ",
+    name="MPAL",
     version="1.0.0",
     author="Clive Lo",
     author_email="clivelo.kw@gmail.com",
-    url="https://github.com/clivelo/MotionTRAJ",
-    license='BSD 2-Clause',
+    url="https://github.com/clivelo/MPAL",
     packages=setuptools.find_packages(),
-    description="Motion trajectory analysis",
+    description="Motion Pattern Analysis (MPAL): A Python Open Source Application for the Trajectory Analysis of Hand Motion",
     long_description=open("README.md").read(),
     install_requires=[
         "numpy == 1.17.2",
