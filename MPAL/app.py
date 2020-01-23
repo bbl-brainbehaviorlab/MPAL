@@ -1262,17 +1262,17 @@ class Settings:
             default_text = "# DO NOT CHANGE THE CONTENT OF THIS FILE UNLESS YOU KNOW WHAT YOU ARE DOING!!!\n" \
                            "# IF ERROR OCCURS BECAUSE OF THIS FILE, SIMPLY DELETE THIS FILE THEN RUN THE APPLICATION TO RESET TO DEFAULT SETTINGS\n\n" \
                            "# Analysis settings parameters\n" \
-                           "self.x_threshold = 45\n" \
-                           "self.y_threshold = 45\n" \
-                           "self.z_threshold = 45\n" \
+                           "self.x_threshold = 60.0\n" \
+                           "self.y_threshold = 60.0\n" \
+                           "self.z_threshold = 60.0\n" \
                            "self.main_direction_threshold = 5\n\n" \
                            "# Plot settings parameters\n" \
                            "self.dpi = 60"
             with open(os.path.join(script_dir, "config/settings.config"), 'w') as f:
                 f.writelines(default_text)
-            self.x_threshold = 45
-            self.y_threshold = 45
-            self.z_threshold = 45
+            self.x_threshold = 60.0
+            self.y_threshold = 60.0
+            self.z_threshold = 60.0
             self.main_direction_threshold = 5
             self.dpi = 60
 
@@ -1370,7 +1370,7 @@ class AnalysisSettingsWidget(QtWidgets.QWidget):
 
         # Create labels and line-edit for entries
         xturn_lbl = QtWidgets.QLabel("X-axis (L/R) threshold (degrees):<br>"
-                                     "(Default: 45) (0 to 90)", self)
+                                     "(Default: 60) (0 to 90)", self)
         layout.addWidget(xturn_lbl, 1, 1, 1, 1)
 
         self.xturn_le = QtWidgets.QLineEdit(str(self.x_threshold), self)
@@ -1378,7 +1378,7 @@ class AnalysisSettingsWidget(QtWidgets.QWidget):
         layout.addWidget(self.xturn_le, 1, 2, 1, 1)
 
         yturn_lbl = QtWidgets.QLabel("Y-axis (F/B) threshold (degrees):<br>"
-                                     "(Default: 45) (0 to 90)", self)
+                                     "(Default: 60) (0 to 90)", self)
         layout.addWidget(yturn_lbl, 2, 1, 1, 1)
 
         self.yturn_le = QtWidgets.QLineEdit(str(self.y_threshold), self)
@@ -1386,7 +1386,7 @@ class AnalysisSettingsWidget(QtWidgets.QWidget):
         layout.addWidget(self.yturn_le, 2, 2, 1, 1)
 
         zturn_lbl = QtWidgets.QLabel("Z-axis (U/D) threshold (degrees):<br>"
-                                     "(Default: 45) (0 to 90)", self)
+                                     "(Default: 60) (0 to 90)", self)
         layout.addWidget(zturn_lbl, 3, 1, 1, 1)
 
         self.zturn_le = QtWidgets.QLineEdit(str(self.z_threshold), self)
