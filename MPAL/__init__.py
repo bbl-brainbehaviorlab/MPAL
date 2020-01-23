@@ -1,1 +1,1 @@
-name = "MotionTRAJ"
+name = "MPAL"
