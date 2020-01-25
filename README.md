@@ -14,7 +14,7 @@ Schrum, P., Rintoul, M., & Newton, B. (2018). Curvature based analysis to identi
 (E.g., `cd <directory_path>/MPAL-master`)
 5. Use `pip install .` to install all dependencies.
 
-## Run MPAL
+## Run MotionTRAJ
 1. Open terminal.
 2. Use `cd` to change directory to the MotionTRAJ subfolder within the main application folder.
 (E.g., `cd <directory_path>/MPAL-master/MPAL`) (You should see *\_\_init\_\_.py*, *app.py*, *analysis.py*, & *preprocessing.py* in this folder)
