@@ -24,8 +24,8 @@ from analysis import *
 # App info
 appname = "MPAL"
 version = "1.0.0"
-release_date = "January 23, 2020"
-update_date = "January 23, 2020"
+release_date = "January 30, 2020"
+update_date = "January 30, 2020"
 
 
 #########################
@@ -824,7 +824,7 @@ class App(QtWidgets.QMainWindow):
                "5. At the bottom left of the GUI, you may zoom in/out of the middle plot\n\n"\
                "6. If you wish to make amendments to the label predictions, click the change label button at the\n"\
                "\tbottom, this will create a pop-up dialog window that allows you to change the labels\n\n"\
-               "7. Save the output pattern string as a .pkl/.mat/.txt file\n"
+               "7. Save the output pattern string as a .pkl/.mat/.csv file\n"
 
         # Create dialog
         d = QtWidgets.QDialog()
