@@ -12,6 +12,6 @@
 
 ## Run MPAL
 1. Open terminal.
-2. Use `cd` to change directory to the MotionTRAJ subfolder within the main application folder.
+2. Use `cd` to change directory to the MPAL subfolder within the main application folder.
 (E.g., `cd <directory_path>/MPAL-master/MPAL`) (You should see *\_\_init\_\_.py*, *app.py*, *analysis.py*, & *preprocessing.py* in this folder)
 3. Enter `python3 app.py` to run the application.
