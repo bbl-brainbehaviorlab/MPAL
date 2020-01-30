@@ -230,7 +230,7 @@ class App(QtWidgets.QMainWindow):
         openButton.triggered.connect(self.__openfile)
         file_menu.addAction(openButton)
 
-        self.exportcsvButton = QtWidgets.QAction('&Export to CSV', self)
+        self.exportcsvButton = QtWidgets.QAction('&Export Coordinates', self)
         self.exportcsvButton.setStatusTip("Export trajectory coordinates to CSV")
         self.exportcsvButton.setDisabled(True)
         self.exportcsvButton.triggered.connect(self.__exportcsv)
