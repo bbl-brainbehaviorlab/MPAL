@@ -627,8 +627,8 @@ class App(QtWidgets.QMainWindow):
         d.exec_()
 
     def __save(self):
-        name = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", self.file_path[0][:-4],
-                                                     "Pickle Files (*.pkl);;MATLAB Files (*.mat);;TXT Files (*.txt)",
+        name = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", self.file_path[0][:-4] + "_MPAL",
+                                                     "Pickle Files (*.pkl);;MATLAB Files (*.mat);;CSV Files (*.csv)",
                                                      options=QtWidgets.QFileDialog.DontUseNativeDialog)
         if name[0] != '':
             if name[1] == "Pickle Files (*.pkl)":
@@ -660,20 +660,25 @@ class App(QtWidgets.QMainWindow):
                          'lvl1hash': self.analysis.lvl3hash,
                          'lvl1hashframe': self.analysis.lvl3hashframe,
                          'idx': self.analysis.idx})
-            elif name[1] == "TXT Files (*.txt)":
-                with open(name[0] + '.txt', 'w') as handle:
-                    text = self.analysis.original_corr + '\n\n' + \
-                           self.analysis.lvl1hash[0] + '\n' + \
-                           self.analysis.lvl1hash[1] + '\n' + \
-                           self.analysis.lvl1hash[2] + '\n\n' + \
-                           self.analysis.lvl2hash[0] + '\n' + \
-                           self.analysis.lvl2hash[1] + '\n' + \
-                           self.analysis.lvl2hash[2] + '\n' + \
-                           ' '.join(map(str, self.analysis.lvl2hashframe)) + '\n\n' + \
-                           ' '.join(map(str, self.analysis.lvl3hash)) + '\n' + \
-                           ' '.join(map(str, self.analysis.lvl3hashframe)) + '\n\n' + \
-                           ' '.join(map(str, self.analysis.idx))
-                    handle.write(text)
+            elif name[1] == "CSV Files (*.csv)":
+                len_arr = max([len(self.analysis.lvl3hash), len(self.analysis.lvl3hashframe), len(self.analysis.idx)])
+
+                tmpout1 = np.array(list(map(str, self.analysis.lvl3hash)))
+                out1 = np.empty_like(tmpout1, shape = (len_arr,))
+                out1[:len(self.analysis.lvl3hash)] = tmpout1
+
+                tmpout2 = np.array(list(map(str, self.analysis.lvl3hashframe)))
+                out2 = np.empty_like(tmpout2, shape=(len_arr,))
+                out2[:len(self.analysis.lvl3hashframe)] = tmpout2
+
+                tmpout3 = np.array(list(map(str, self.analysis.idx)))
+                out3 = np.empty_like(tmpout3, shape=(len_arr,))
+                out3[:len(self.analysis.idx)] = tmpout3
+
+                out = np.vstack((out1, out2, out3)).T
+                with open(name[0] + '.csv', 'w') as handle:
+                    wr = csv.writer(handle, quoting=csv.QUOTE_MINIMAL)
+                    wr.writerows(out)
 
     def __exportcsv(self):
         name = QtWidgets.QFileDialog.getSaveFileName(self, "Export to CSV", self.file_path[0][:-4], "CSV Files (*.csv)",
