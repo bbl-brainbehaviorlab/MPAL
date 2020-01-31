@@ -76,21 +76,26 @@ class Analysis:
         # Preprocessing
         self._preprocessing(x, y, z, smooth, interpolate, interdist)
 
-        # Get level-3 hash
+        # Get level-1 hash
         self._lvl1hash()
 
         # Get level-2 hash
         self._lvl2hash()
 
-        # Get level-1 hash
+        # Get level-3 hash
         self._lvl3hash()
+
+        # Get post-interpolated to pre-interpolated conversion of data points
+        self.idx = []
+        for fr in self.lvl3hashframe:
+            self.idx.append(np.where((self.pre_post_idx >= fr) == True)[0][0])
 
         # Create plot object
         self.plot = Plot(self.x, self.y, self.z, self.lvl2hashframe, self.lvl3hashframe)
 
     # Preprocessing
     def _preprocessing(self, x, y, z, smooth, interpolate, interdist):
-        self.X, self.idx = preprocess(x, y, z, smooth=smooth, interpolate=interpolate, interdist=interdist)
+        self.X, self.pre_post_idx = preprocess(x, y, z, smooth=smooth, interpolate=interpolate, interdist=interdist)
         self.x = self.X[:, 0]
         self.y = self.X[:, 1]
         self.z = self.X[:, 2]
@@ -267,7 +272,7 @@ class Analysis:
                         result = ""
                     self.lvl3hash[h] = ''.join(set(result))
 
-                    #remove turn between two identical main direction
+                    # Remove turn between two identical main direction
                     try:
                         if main_axis1 == main_axis2:
                             self.lvl3hash[h + 1] = ""
@@ -275,7 +280,7 @@ class Analysis:
                     except IndexError:
                         pass
 
-            #list all index where "" empty string
+            # List all index where "" empty string
             ix = [i for i, s in enumerate(self.lvl3hash) if s == '']
             ix.reverse()
 
@@ -285,6 +290,9 @@ class Analysis:
 
             if len(self.lvl3hash) == length:
                 break
+
+        # END Padding
+        self.lvl3hash.append("END")
 
     @staticmethod
     def __find_angle(p1, p2, p3):

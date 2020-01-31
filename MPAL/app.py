@@ -661,23 +661,33 @@ class App(QtWidgets.QMainWindow):
                          'lvl1hashframe': self.analysis.lvl3hashframe,
                          'idx': self.analysis.idx})
             elif name[1] == "CSV Files (*.csv)":
-                len_arr = max([len(self.analysis.lvl3hash), len(self.analysis.lvl3hashframe), len(self.analysis.idx)])
+                # Ensure length of the three outputs are the same
+                # (IT SHOULD BE THE SAME, OTHERWISE SOMETHING WENT WRONG)
+                if len(self.analysis.lvl3hash) == len(self.analysis.lvl3hashframe) == len(self.analysis.idx):
+                    out1 = np.array(list(map(str, self.analysis.lvl3hash)))
+                    out2 = np.array(list(map(str, self.analysis.lvl3hashframe)))
+                    out3 = np.array(list(map(str, self.analysis.idx)))
+                    out = np.vstack((out1, out2, out3)).T
+                else:
+                    len_arr = max([len(self.analysis.lvl3hash), len(self.analysis.lvl3hashframe), len(self.analysis.idx)])
 
-                tmpout1 = np.array(list(map(str, self.analysis.lvl3hash)))
-                out1 = np.empty_like(tmpout1, shape = (len_arr,))
-                out1[:len(self.analysis.lvl3hash)] = tmpout1
+                    tmpout1 = np.array(list(map(str, self.analysis.lvl3hash)))
+                    out1 = np.empty_like(tmpout1, shape = (len_arr,))
+                    out1[:len(self.analysis.lvl3hash)] = tmpout1
 
-                tmpout2 = np.array(list(map(str, self.analysis.lvl3hashframe)))
-                out2 = np.empty_like(tmpout2, shape=(len_arr,))
-                out2[:len(self.analysis.lvl3hashframe)] = tmpout2
+                    tmpout2 = np.array(list(map(str, self.analysis.lvl3hashframe)))
+                    out2 = np.empty_like(tmpout2, shape=(len_arr,))
+                    out2[:len(self.analysis.lvl3hashframe)] = tmpout2
 
-                tmpout3 = np.array(list(map(str, self.analysis.idx)))
-                out3 = np.empty_like(tmpout3, shape=(len_arr,))
-                out3[:len(self.analysis.idx)] = tmpout3
+                    tmpout3 = np.array(list(map(str, self.analysis.idx)))
+                    out3 = np.empty_like(tmpout3, shape=(len_arr,))
+                    out3[:len(self.analysis.idx)] = tmpout3
 
-                out = np.vstack((out1, out2, out3)).T
+                    out = np.vstack((out1, out2, out3)).T
+
                 with open(name[0] + '.csv', 'w') as handle:
                     wr = csv.writer(handle, quoting=csv.QUOTE_MINIMAL)
+                    wr.writerow(["label_of_segment", "starting_index_of_segment", "starting_index_of_segment_pre_interpolation"])
                     wr.writerows(out)
 
     def __exportcsv(self):
@@ -721,7 +731,7 @@ class App(QtWidgets.QMainWindow):
                                        self.analysis.lvl2hash[1][int(self.scroll_txt_le.text())] +
                                        self.analysis.lvl2hash[2][int(self.scroll_txt_le.text())])
             elif self.processing_level == 3:
-                self.scroll_txt_le.setText(str(len(self.analysis.lvl3hash) - 1))
+                self.scroll_txt_le.setText(str(len(self.analysis.lvl3hash) - 2))
                 self.m.updateplot(self.analysis.plot.updateplot_lvl3(int(self.scroll_txt_le.text())))
                 self.trajlabel.setText(self.analysis.lvl3hash[int(self.scroll_txt_le.text())])
 
@@ -920,7 +930,7 @@ class App(QtWidgets.QMainWindow):
                                            self.analysis.lvl2hash[1][int(self.scroll_txt_le.text())] +
                                            self.analysis.lvl2hash[2][int(self.scroll_txt_le.text())])
             elif self.processing_level == 3:
-                if int(self.scroll_txt_le.text()) < len(self.analysis.lvl3hash) - 1:
+                if int(self.scroll_txt_le.text()) < len(self.analysis.lvl3hash) - 2:
                     self.scroll_txt_le.setText(str(int(self.scroll_txt_le.text()) + 1))
                     self.m.updateplot(self.analysis.plot.updateplot_lvl3(int(self.scroll_txt_le.text())))
                     self.trajlabel.setText(self.analysis.lvl3hash[int(self.scroll_txt_le.text())])
@@ -942,7 +952,7 @@ class App(QtWidgets.QMainWindow):
                                                self.analysis.lvl2hash[1][int(self.scroll_txt_le.text())] +
                                                self.analysis.lvl2hash[2][int(self.scroll_txt_le.text())])
                 elif self.processing_level == 3:
-                    if int(self.scroll_txt_le.text()) <= len(self.analysis.lvl3hash) - 1:
+                    if int(self.scroll_txt_le.text()) <= len(self.analysis.lvl3hash) - 2:
                         self.m.updateplot(self.analysis.plot.updateplot_lvl3(int(self.scroll_txt_le.text())))
                         self.trajlabel.setText(self.analysis.lvl3hash[int(self.scroll_txt_le.text())])
                 self.scroll_txt_le.clearFocus()
@@ -956,7 +966,7 @@ class App(QtWidgets.QMainWindow):
                 elif self.processing_level == 2:
                     limit = len(self.analysis.lvl2hash[0]) - 2
                 elif self.processing_level == 3:
-                    limit = len(self.analysis.lvl3hash) - 1
+                    limit = len(self.analysis.lvl3hash) - 2
 
                 if int(self.scroll_txt_le.text()) > limit:
                     self.scroll_left_btn.setDisabled(True)
