@@ -48,10 +48,20 @@ class App(QtWidgets.QMainWindow):
         self.statusBar().addPermanentWidget(credit)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
-        # Set window background color
+        # Set color palette
         self.setAutoFillBackground(True)
-        p = self.palette()
-        p.setColor(self.backgroundRole(), QtGui.QColor(220, 220, 220))
+        p = QtGui.QPalette()
+        p.setColor(QtGui.QPalette.Window, QtGui.QColor(220, 220, 220))
+        p.setColor(QtGui.QPalette.WindowText, QtCore.Qt.black)
+        p.setColor(QtGui.QPalette.Base, QtCore.Qt.white)
+        p.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(220, 220, 220))
+        p.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)
+        p.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.black)
+        p.setColor(QtGui.QPalette.PlaceholderText, QtCore.Qt.black)
+        p.setColor(QtGui.QPalette.Text, QtCore.Qt.black)
+        p.setColor(QtGui.QPalette.Button, QtGui.QColor(220, 220, 220))
+        p.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.black)
+        p.setColor(QtGui.QPalette.BrightText, QtCore.Qt.black)
         self.setPalette(p)
 
         # Set variable for operation check
@@ -107,10 +117,10 @@ class App(QtWidgets.QMainWindow):
         plot_layout.addWidget(self.m)
 
         # Separation line after plot
-        line2 = QtWidgets.QFrame(main_widget)
-        line2.setFrameShape(QtWidgets.QFrame.HLine)
-        line2.setFrameShadow(QtWidgets.QFrame.Sunken)
-        plot_layout.addWidget(line2)
+        line = QtWidgets.QFrame(main_widget)
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        plot_layout.addWidget(line)
 
         # Create label to describe point trajectory
         # Put it in label_layout
