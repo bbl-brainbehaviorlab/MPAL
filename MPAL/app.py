@@ -70,6 +70,9 @@ class App(QtWidgets.QMainWindow):
         # Set variable for processing level
         self.processing_level = 1
 
+        # Set variable for position tracking
+        self.current_pos = 0
+
         # Initialize file-opening variables
         self.file_path = None
         self.header = None
@@ -201,6 +204,7 @@ class App(QtWidgets.QMainWindow):
         self.scroll_txt_le.setReadOnly(True)
         self.scroll_txt_le.textChanged.connect(self.__scroll_textChange)
         self.scroll_txt_le.returnPressed.connect(self.__scroll_enter)
+        self.scroll_txt_le.installEventFilter(self)
         bottom_right_layout.addWidget(self.scroll_txt_le)
 
         self.scroll_right_btn = QtWidgets.QPushButton(">", main_widget)
@@ -211,6 +215,7 @@ class App(QtWidgets.QMainWindow):
         self.scroll_right_btn.setShortcut('Right')
         self.scroll_right_btn.setStatusTip("Scroll to the next segment")
         self.scroll_right_btn.setDefault(False)
+        self.scroll_right_btn.setDisabled(True)
         self.scroll_right_btn.clicked.connect(self.__scroll_right)
         bottom_right_layout.addWidget(self.scroll_right_btn)
         bottom_right_layout.addStretch()
@@ -353,6 +358,7 @@ class App(QtWidgets.QMainWindow):
 
     def __newfile(self):
         self.processing_level = 1
+        self.current_pos = 0
         self.trajlabel.setText('/')
         self.zoom = 1.0
         self.zoom_lbl.setText(str(self.zoom))
@@ -360,6 +366,7 @@ class App(QtWidgets.QMainWindow):
         self.scroll_left_btn.setDisabled(True)
         self.scroll_txt_le.setText('0')
         self.scroll_txt_le.setReadOnly(True)
+        self.scroll_right_btn.setDisabled(True)
         self.change_btn.setDisabled(True)
         self.saveButton.setDisabled(True)
         self.exportcsvButton.setDisabled(True)
@@ -417,6 +424,7 @@ class App(QtWidgets.QMainWindow):
 
             if valid:
                 self.processing_level = 1
+                self.current_pos = 0
                 self.scroll_txt_le.setText('0')
 
                 # Get header
@@ -460,11 +468,12 @@ class App(QtWidgets.QMainWindow):
                 self.m.initplot(self.analysis.plot.initplot_lvl1(), title='3D trajectory (Level 1)',
                                 x_axis='X (Left/Right)', y_axis='Y (Forward/Backward)', z_axis='Z (Up/Down)',
                                 invert_x=self.invert_x, invert_y=self.invert_y, invert_z=self.invert_z)
-                self.trajlabel.setText(self.analysis.lvl1hash[0][int(self.scroll_txt_le.text())] +
-                                       self.analysis.lvl1hash[1][int(self.scroll_txt_le.text())] +
-                                       self.analysis.lvl1hash[2][int(self.scroll_txt_le.text())])
+                self.trajlabel.setText(self.analysis.lvl1hash[0][0] +
+                                       self.analysis.lvl1hash[1][0] +
+                                       self.analysis.lvl1hash[2][0])
 
                 self.scroll_txt_le.setReadOnly(False)
+                self.scroll_right_btn.setDisabled(False)
                 self.change_btn.setDisabled(False)
                 self.saveButton.setDisabled(False)
                 self.exportcsvButton.setDisabled(False)
@@ -711,70 +720,77 @@ class App(QtWidgets.QMainWindow):
 
     def __jumpstart(self):
         if self.operating:
+            self.current_pos = 0
             self.scroll_txt_le.setText("0")
             if self.processing_level == 1:
-                self.m.updateplot(self.analysis.plot.updateplot_lvl1(int(self.scroll_txt_le.text())))
-                self.trajlabel.setText(self.analysis.lvl1hash[0][int(self.scroll_txt_le.text())] +
-                                       self.analysis.lvl1hash[1][int(self.scroll_txt_le.text())] +
-                                       self.analysis.lvl1hash[2][int(self.scroll_txt_le.text())])
+                self.m.updateplot(self.analysis.plot.updateplot_lvl1(self.current_pos))
+                self.trajlabel.setText(self.analysis.lvl1hash[0][self.current_pos] +
+                                       self.analysis.lvl1hash[1][self.current_pos] +
+                                       self.analysis.lvl1hash[2][self.current_pos])
             elif self.processing_level == 2:
-                self.m.updateplot(self.analysis.plot.updateplot_lvl2(int(self.scroll_txt_le.text())))
-                self.trajlabel.setText(self.analysis.lvl2hash[0][int(self.scroll_txt_le.text())] +
-                                       self.analysis.lvl2hash[1][int(self.scroll_txt_le.text())] +
-                                       self.analysis.lvl2hash[2][int(self.scroll_txt_le.text())])
+                self.m.updateplot(self.analysis.plot.updateplot_lvl2(self.current_pos))
+                self.trajlabel.setText(self.analysis.lvl2hash[0][self.current_pos] +
+                                       self.analysis.lvl2hash[1][self.current_pos] +
+                                       self.analysis.lvl2hash[2][self.current_pos])
             elif self.processing_level == 3:
-                self.m.updateplot(self.analysis.plot.updateplot_lvl3(int(self.scroll_txt_le.text())))
-                self.trajlabel.setText(self.analysis.lvl3hash[int(self.scroll_txt_le.text())])
+                self.m.updateplot(self.analysis.plot.updateplot_lvl3(self.current_pos))
+                self.trajlabel.setText(self.analysis.lvl3hash[self.current_pos])
 
     def __jumpend(self):
         if self.operating:
             if self.processing_level == 1:
-                self.scroll_txt_le.setText(str(len(self.analysis.lvl1hash[0]) - 2))
-                self.m.updateplot(self.analysis.plot.updateplot_lvl1(int(self.scroll_txt_le.text())))
-                self.trajlabel.setText(self.analysis.lvl1hash[0][int(self.scroll_txt_le.text())] +
-                                       self.analysis.lvl1hash[1][int(self.scroll_txt_le.text())] +
-                                       self.analysis.lvl1hash[2][int(self.scroll_txt_le.text())])
+                self.current_pos = len(self.analysis.lvl1hash[0]) - 2
+                self.scroll_txt_le.setText(str(self.current_pos))
+                self.m.updateplot(self.analysis.plot.updateplot_lvl1(self.current_pos))
+                self.trajlabel.setText(self.analysis.lvl1hash[0][self.current_pos] +
+                                       self.analysis.lvl1hash[1][self.current_pos] +
+                                       self.analysis.lvl1hash[2][self.current_pos])
             elif self.processing_level == 2:
-                self.scroll_txt_le.setText(str(len(self.analysis.lvl2hash[0]) - 2))
-                self.m.updateplot(self.analysis.plot.updateplot_lvl2(int(self.scroll_txt_le.text())))
-                self.trajlabel.setText(self.analysis.lvl2hash[0][int(self.scroll_txt_le.text())] +
-                                       self.analysis.lvl2hash[1][int(self.scroll_txt_le.text())] +
-                                       self.analysis.lvl2hash[2][int(self.scroll_txt_le.text())])
+                self.current_pos = len(self.analysis.lvl2hash[0]) - 2
+                self.scroll_txt_le.setText(str(self.current_pos))
+                self.m.updateplot(self.analysis.plot.updateplot_lvl2(self.current_pos))
+                self.trajlabel.setText(self.analysis.lvl2hash[0][self.current_pos] +
+                                       self.analysis.lvl2hash[1][self.current_pos] +
+                                       self.analysis.lvl2hash[2][self.current_pos])
             elif self.processing_level == 3:
-                self.scroll_txt_le.setText(str(len(self.analysis.lvl3hash) - 2))
-                self.m.updateplot(self.analysis.plot.updateplot_lvl3(int(self.scroll_txt_le.text())))
-                self.trajlabel.setText(self.analysis.lvl3hash[int(self.scroll_txt_le.text())])
+                self.current_pos = len(self.analysis.lvl3hash) - 2
+                self.scroll_txt_le.setText(str(self.current_pos))
+                self.m.updateplot(self.analysis.plot.updateplot_lvl3(self.current_pos))
+                self.trajlabel.setText(self.analysis.lvl3hash[self.current_pos])
 
     def __lvl1switch(self):
         if self.processing_level != 1:
             self.processing_level = 1
+            self.current_pos = 0
             self.scroll_txt_le.setText('0')
             self.m.initplot(self.analysis.plot.initplot_lvl1(), title='3D trajectory (Level 1)',
                             x_axis='X (Left/Right)', y_axis='Y (Forward/Backward)', z_axis='Z (Up/Down)',
                             invert_x=self.invert_x, invert_y=self.invert_y, invert_z=self.invert_z)
-            self.trajlabel.setText(self.analysis.lvl1hash[0][int(self.scroll_txt_le.text())] +
-                                   self.analysis.lvl1hash[1][int(self.scroll_txt_le.text())] +
-                                   self.analysis.lvl1hash[2][int(self.scroll_txt_le.text())])
+            self.trajlabel.setText(self.analysis.lvl1hash[0][0] +
+                                   self.analysis.lvl1hash[1][0] +
+                                   self.analysis.lvl1hash[2][0])
 
     def __lvl2switch(self):
         if self.processing_level != 2:
             self.processing_level = 2
+            self.current_pos = 0
             self.scroll_txt_le.setText('0')
             self.m.initplot(self.analysis.plot.initplot_lvl2(), title='3D trajectory (Level 2)',
                             x_axis='X (Left/Right)', y_axis='Y (Forward/Backward)', z_axis='Z (Up/Down)',
                             invert_x=self.invert_x, invert_y=self.invert_y, invert_z=self.invert_z)
-            self.trajlabel.setText(self.analysis.lvl2hash[0][int(self.scroll_txt_le.text())] +
-                                   self.analysis.lvl2hash[1][int(self.scroll_txt_le.text())] +
-                                   self.analysis.lvl2hash[2][int(self.scroll_txt_le.text())])
+            self.trajlabel.setText(self.analysis.lvl2hash[0][0] +
+                                   self.analysis.lvl2hash[1][0] +
+                                   self.analysis.lvl2hash[2][0])
 
     def __lvl3switch(self):
         if self.processing_level != 3:
             self.processing_level = 3
+            self.current_pos = 0
             self.scroll_txt_le.setText('0')
             self.m.initplot(self.analysis.plot.initplot_lvl3(), title='3D trajectory (Level 3)',
                             x_axis='X (Left/Right)', y_axis='Y (Forward/Backward)', z_axis='Z (Up/Down)',
                             invert_x=self.invert_x, invert_y=self.invert_y, invert_z=self.invert_z)
-            self.trajlabel.setText(self.analysis.lvl3hash[int(self.scroll_txt_le.text())])
+            self.trajlabel.setText(self.analysis.lvl3hash[0])
 
     def __trajectory(self):
         traj = Trajectory(self.analysis.x, self.analysis.y, self.analysis.z,
@@ -799,13 +815,14 @@ class App(QtWidgets.QMainWindow):
 
             # Reset plotting and labels
             self.processing_level = 1
+            self.current_pos = 0
             self.scroll_txt_le.setText('0')
             self.m.initplot(self.analysis.plot.initplot_lvl1(), title='3D trajectory (Level 1)',
                             x_axis='X (Left/Right)', y_axis='Y (Forward/Backward)', z_axis='Z (Up/Down)',
                             invert_x=self.invert_x, invert_y=self.invert_y, invert_z=self.invert_z)
-            self.trajlabel.setText(self.analysis.lvl1hash[0][int(self.scroll_txt_le.text())] +
-                                   self.analysis.lvl1hash[1][int(self.scroll_txt_le.text())] +
-                                   self.analysis.lvl1hash[2][int(self.scroll_txt_le.text())])
+            self.trajlabel.setText(self.analysis.lvl1hash[0][0] +
+                                   self.analysis.lvl1hash[1][0] +
+                                   self.analysis.lvl1hash[2][0])
 
     def __about(self):
         QtWidgets.QMessageBox.about(self, "About {}".format(appname),
@@ -883,11 +900,11 @@ class App(QtWidgets.QMainWindow):
                 self.zoom -= .1
                 self.zoom_lbl.setText(str(round(self.zoom, 1)))
                 if self.processing_level == 3:
-                    self.m.updateplot(self.analysis.plot.updateplot_lvl3(int(self.scroll_txt_le.text())))
+                    self.m.updateplot(self.analysis.plot.updateplot_lvl3(self.current_pos))
                 elif self.processing_level == 2:
-                    self.m.updateplot(self.analysis.plot.updateplot_lvl2(int(self.scroll_txt_le.text())))
+                    self.m.updateplot(self.analysis.plot.updateplot_lvl2(self.current_pos))
                 elif self.processing_level == 1:
-                    self.m.updateplot(self.analysis.plot.updateplot_lvl1(int(self.scroll_txt_le.text())))
+                    self.m.updateplot(self.analysis.plot.updateplot_lvl1(self.current_pos))
 
     # Action for zooming in
     def __zoom_in(self):
@@ -897,53 +914,57 @@ class App(QtWidgets.QMainWindow):
                 self.zoom += .1
                 self.zoom_lbl.setText(str(round(self.zoom, 1)))
                 if self.processing_level == 3:
-                    self.m.updateplot(self.analysis.plot.updateplot_lvl3(int(self.scroll_txt_le.text())))
+                    self.m.updateplot(self.analysis.plot.updateplot_lvl3(self.current_pos))
                 elif self.processing_level == 2:
-                    self.m.updateplot(self.analysis.plot.updateplot_lvl2(int(self.scroll_txt_le.text())))
+                    self.m.updateplot(self.analysis.plot.updateplot_lvl2(self.current_pos))
                 elif self.processing_level == 1:
-                    self.m.updateplot(self.analysis.plot.updateplot_lvl1(int(self.scroll_txt_le.text())))
+                    self.m.updateplot(self.analysis.plot.updateplot_lvl1(self.current_pos))
 
     # Action for scroll left
     def __scroll_left(self):
         if self.operating:
-            if int(self.scroll_txt_le.text()) > 0:
-                self.scroll_txt_le.setText(str(int(self.scroll_txt_le.text()) - 1))
+            if self.current_pos > 0:
+                self.current_pos -= 1
+                self.scroll_txt_le.setText(str(self.current_pos))
                 if self.processing_level == 1:
-                    self.m.updateplot(self.analysis.plot.updateplot_lvl1(int(self.scroll_txt_le.text())))
-                    self.trajlabel.setText(self.analysis.lvl1hash[0][int(self.scroll_txt_le.text())] +
-                                           self.analysis.lvl1hash[1][int(self.scroll_txt_le.text())] +
-                                           self.analysis.lvl1hash[2][int(self.scroll_txt_le.text())])
+                    self.m.updateplot(self.analysis.plot.updateplot_lvl1(self.current_pos))
+                    self.trajlabel.setText(self.analysis.lvl1hash[0][self.current_pos] +
+                                           self.analysis.lvl1hash[1][self.current_pos] +
+                                           self.analysis.lvl1hash[2][self.current_pos])
                 elif self.processing_level == 2:
-                    self.m.updateplot(self.analysis.plot.updateplot_lvl2(int(self.scroll_txt_le.text())))
-                    self.trajlabel.setText(self.analysis.lvl2hash[0][int(self.scroll_txt_le.text())] +
-                                           self.analysis.lvl2hash[1][int(self.scroll_txt_le.text())] +
-                                           self.analysis.lvl2hash[2][int(self.scroll_txt_le.text())])
+                    self.m.updateplot(self.analysis.plot.updateplot_lvl2(self.current_pos))
+                    self.trajlabel.setText(self.analysis.lvl2hash[0][self.current_pos] +
+                                           self.analysis.lvl2hash[1][self.current_pos] +
+                                           self.analysis.lvl2hash[2][self.current_pos])
                 elif self.processing_level == 3:
-                    self.m.updateplot(self.analysis.plot.updateplot_lvl3(int(self.scroll_txt_le.text())))
-                    self.trajlabel.setText(self.analysis.lvl3hash[int(self.scroll_txt_le.text())])
+                    self.m.updateplot(self.analysis.plot.updateplot_lvl3(self.current_pos))
+                    self.trajlabel.setText(self.analysis.lvl3hash[self.current_pos])
 
     # Action for scroll right
     def __scroll_right(self):
         if self.operating:
             if self.processing_level == 1:
-                if int(self.scroll_txt_le.text()) < len(self.analysis.lvl1hash[0]) - 2:
-                    self.scroll_txt_le.setText(str(int(self.scroll_txt_le.text()) + 1))
-                    self.m.updateplot(self.analysis.plot.updateplot_lvl1(int(self.scroll_txt_le.text())))
-                    self.trajlabel.setText(self.analysis.lvl1hash[0][int(self.scroll_txt_le.text())] +
-                                           self.analysis.lvl1hash[1][int(self.scroll_txt_le.text())] +
-                                           self.analysis.lvl1hash[2][int(self.scroll_txt_le.text())])
+                if self.current_pos < len(self.analysis.lvl1hash[0]) - 2:
+                    self.current_pos += 1
+                    self.scroll_txt_le.setText(str(self.current_pos))
+                    self.m.updateplot(self.analysis.plot.updateplot_lvl1(self.current_pos))
+                    self.trajlabel.setText(self.analysis.lvl1hash[0][self.current_pos] +
+                                           self.analysis.lvl1hash[1][self.current_pos] +
+                                           self.analysis.lvl1hash[2][self.current_pos])
             elif self.processing_level == 2:
-                if int(self.scroll_txt_le.text()) < len(self.analysis.lvl2hash[0]) - 2:
-                    self.scroll_txt_le.setText(str(int(self.scroll_txt_le.text()) + 1))
-                    self.m.updateplot(self.analysis.plot.updateplot_lvl2(int(self.scroll_txt_le.text())))
-                    self.trajlabel.setText(self.analysis.lvl2hash[0][int(self.scroll_txt_le.text())] +
-                                           self.analysis.lvl2hash[1][int(self.scroll_txt_le.text())] +
-                                           self.analysis.lvl2hash[2][int(self.scroll_txt_le.text())])
+                if self.current_pos < len(self.analysis.lvl2hash[0]) - 2:
+                    self.current_pos += 1
+                    self.scroll_txt_le.setText(str(self.current_pos))
+                    self.m.updateplot(self.analysis.plot.updateplot_lvl2(self.current_pos))
+                    self.trajlabel.setText(self.analysis.lvl2hash[0][self.current_pos] +
+                                           self.analysis.lvl2hash[1][self.current_pos] +
+                                           self.analysis.lvl2hash[2][self.current_pos])
             elif self.processing_level == 3:
-                if int(self.scroll_txt_le.text()) < len(self.analysis.lvl3hash) - 2:
-                    self.scroll_txt_le.setText(str(int(self.scroll_txt_le.text()) + 1))
-                    self.m.updateplot(self.analysis.plot.updateplot_lvl3(int(self.scroll_txt_le.text())))
-                    self.trajlabel.setText(self.analysis.lvl3hash[int(self.scroll_txt_le.text())])
+                if self.current_pos < len(self.analysis.lvl3hash) - 2:
+                    self.current_pos += 1
+                    self.scroll_txt_le.setText(str(self.current_pos))
+                    self.m.updateplot(self.analysis.plot.updateplot_lvl3(self.current_pos))
+                    self.trajlabel.setText(self.analysis.lvl3hash[self.current_pos])
 
     # Action for hitting enter on scroll line edit
     def __scroll_enter(self):
@@ -951,20 +972,23 @@ class App(QtWidgets.QMainWindow):
             if self.scroll_txt_le.text() != "":
                 if self.processing_level == 1:
                     if int(self.scroll_txt_le.text()) <= len(self.analysis.lvl1hash[0]) - 2:
-                        self.m.updateplot(self.analysis.plot.updateplot_lvl1(int(self.scroll_txt_le.text())))
-                        self.trajlabel.setText(self.analysis.lvl1hash[0][int(self.scroll_txt_le.text())] +
-                                               self.analysis.lvl1hash[1][int(self.scroll_txt_le.text())] +
-                                               self.analysis.lvl1hash[2][int(self.scroll_txt_le.text())])
+                        self.current_pos = int(self.scroll_txt_le.text())
+                        self.m.updateplot(self.analysis.plot.updateplot_lvl1(self.current_pos))
+                        self.trajlabel.setText(self.analysis.lvl1hash[0][self.current_pos] +
+                                               self.analysis.lvl1hash[1][self.current_pos] +
+                                               self.analysis.lvl1hash[2][self.current_pos])
                 elif self.processing_level == 2:
                     if int(self.scroll_txt_le.text()) <= len(self.analysis.lvl2hash[0]) - 2:
-                        self.m.updateplot(self.analysis.plot.updateplot_lvl2(int(self.scroll_txt_le.text())))
-                        self.trajlabel.setText(self.analysis.lvl2hash[0][int(self.scroll_txt_le.text())] +
-                                               self.analysis.lvl2hash[1][int(self.scroll_txt_le.text())] +
-                                               self.analysis.lvl2hash[2][int(self.scroll_txt_le.text())])
+                        self.current_pos = int(self.scroll_txt_le.text())
+                        self.m.updateplot(self.analysis.plot.updateplot_lvl2(self.current_pos))
+                        self.trajlabel.setText(self.analysis.lvl2hash[0][self.current_pos] +
+                                               self.analysis.lvl2hash[1][self.current_pos] +
+                                               self.analysis.lvl2hash[2][self.current_pos])
                 elif self.processing_level == 3:
                     if int(self.scroll_txt_le.text()) <= len(self.analysis.lvl3hash) - 2:
-                        self.m.updateplot(self.analysis.plot.updateplot_lvl3(int(self.scroll_txt_le.text())))
-                        self.trajlabel.setText(self.analysis.lvl3hash[int(self.scroll_txt_le.text())])
+                        self.current_pos = int(self.scroll_txt_le.text())
+                        self.m.updateplot(self.analysis.plot.updateplot_lvl3(self.current_pos))
+                        self.trajlabel.setText(self.analysis.lvl3hash[self.current_pos])
                 self.scroll_txt_le.clearFocus()
 
     # Action for detecting text change on scroll line edit (to prevent passing upper boundary)
@@ -981,6 +1005,7 @@ class App(QtWidgets.QMainWindow):
                 if int(self.scroll_txt_le.text()) > limit:
                     self.scroll_left_btn.setDisabled(True)
                     self.scroll_right_btn.setDisabled(True)
+                    self.scroll_txt_le.setText(self.scroll_txt_le.text()[:-1])
                 elif int(self.scroll_txt_le.text()) == limit:
                     self.scroll_left_btn.setDisabled(False)
                     self.scroll_right_btn.setDisabled(True)
@@ -993,7 +1018,13 @@ class App(QtWidgets.QMainWindow):
 
     # Logic for changing the labels
     def __change_label(self):
-        labelchange = LabelChange(int(self.scroll_txt_le.text()), self.analysis, self.processing_level, self.trajlabel)
+        labelchange = LabelChange(self.current_pos, self.analysis, self.processing_level, self.trajlabel)
+
+    # Detect focus out
+    def eventFilter(self, source, event):
+        if event.type() == QtCore.QEvent.FocusOut and source is self.scroll_txt_le:
+            self.scroll_txt_le.setText(str(self.current_pos))
+        return super(App, self).eventFilter(source, event)
 
 
 #######################
@@ -1040,8 +1071,8 @@ class LabelChange(QtWidgets.QDialog):
         if self.processing_level in [1, 2]:
             # Get the labels and current position
             if self.processing_level == 1:
-                labels = [self.analysis.lvl3hash[0][self.pos], self.analysis.lvl3hash[1][self.pos],
-                          self.analysis.lvl3hash[2][self.pos]]
+                labels = [self.analysis.lvl1hash[0][self.pos], self.analysis.lvl1hash[1][self.pos],
+                          self.analysis.lvl1hash[2][self.pos]]
             else:
                 labels = [self.analysis.lvl2hash[0][self.pos], self.analysis.lvl2hash[1][self.pos],
                           self.analysis.lvl2hash[2][self.pos]]
@@ -1194,7 +1225,7 @@ class LabelChange(QtWidgets.QDialog):
         # Change analysis level 1/2 hash according to the buttons selected
         if self.processing_level in [1, 2]:
             if self.processing_level == 1:
-                hash = self.analysis.lvl3hash
+                hash = self.analysis.lvl1hash
             else:
                 hash = self.analysis.lvl2hash
 
