@@ -24,8 +24,8 @@ from analysis import *
 # App info
 appname = "MPAL"
 version = "1.0.0"
-release_date = "January 30, 2020"
-update_date = "January 30, 2020"
+release_date = "January 31, 2020"
+update_date = "January 31, 2020"
 
 
 #########################
@@ -44,7 +44,7 @@ class App(QtWidgets.QMainWindow):
         self.settings = Settings()
         self.initUI()
         self.dropdownUI()
-        credit = QtWidgets.QLabel("{} v{} by Clive Lo".format(appname, version))
+        credit = QtWidgets.QLabel("{} v{}".format(appname, version))
         self.statusBar().addPermanentWidget(credit)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
@@ -791,9 +791,7 @@ class App(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.about(self, "About {}".format(appname),
                                     "<b>{} (Version {})</b><br>"
                                     "First release on {}<br>"
-                                    "Last update on {}<br><br>"
-                                    "Created by Lo Kwan Wai, Clive<br>"
-                                    "Please contact <a href = \"mailto: clivelo.kw@gmail.com\">clivelo.kw@gmail.com</a> for any inquiries.".
+                                    "Last update on {}".
                                     format(appname, version, release_date, update_date))
 
     # TODO: Beautify the dialog
