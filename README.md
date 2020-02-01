@@ -8,7 +8,7 @@ algorithm-generated labels that describe motion pattern. All folders and files u
 the GNU-GPL v3.0 license (see LICENSE).
 
 ## Installing MPAL
-1. Download the latest official release from [https://github.com/clivelo/MPAL/archive/master.zip] and extract it.<br>
+1. Download the latest official release from <https://github.com/clivelo/MPAL/archive/master.zip> and extract it.<br>
 **OR**<br>
 Clone the repository using `git clone https://github.com/clivelo/MPAL.git`.
 
