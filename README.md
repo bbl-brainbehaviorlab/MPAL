@@ -22,7 +22,7 @@ Clone the repository using `git clone https://github.com/clivelo/MPAL.git`.
 5. Use `pip install .` or `pip3 install .` to install all dependencies.
 
 ## To use MPAL
-1. Use `cd` to change directory to the MPAL subfolder within the main application folder.<br>
+1. On terminal, use `cd` to change directory to the MPAL subfolder within the main application folder.<br>
 (E.g., `cd <directory_path>/MPAL-master/MPAL`)<br>
 (You should see *\_\_init\_\_.py*, *app.py*, *analysis.py*, & *preprocessing.py* in this folder)
 
