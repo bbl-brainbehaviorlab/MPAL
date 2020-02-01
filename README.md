@@ -7,7 +7,7 @@ coordinates retrieved from, for example, a motion tracking device, and visualize
 algorithm-generated labels that describe motion pattern. All folders and files under this repository are released under
 the GNU-GPL v3.0 license (see LICENSE).
 
-## Installation Guide
+## Installing MPAL
 1. Download the latest official release from [https://github.com/clivelo/MPAL/archive/master.zip] and extract it.<br>
 **OR**<br>
 Clone the repository using `git clone https://github.com/clivelo/MPAL.git`.
@@ -21,7 +21,7 @@ Clone the repository using `git clone https://github.com/clivelo/MPAL.git`.
 
 5. Use `pip install .` or `pip3 install .` to install all dependencies.
 
-## Run MPAL
+## To use MPAL
 1. Use `cd` to change directory to the MPAL subfolder within the main application folder.<br>
 (E.g., `cd <directory_path>/MPAL-master/MPAL`)<br>
 (You should see *\_\_init\_\_.py*, *app.py*, *analysis.py*, & *preprocessing.py* in this folder)
