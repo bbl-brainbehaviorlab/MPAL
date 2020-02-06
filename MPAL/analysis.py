@@ -86,9 +86,7 @@ class Analysis:
         self._lvl3hash()
 
         # Get post-interpolated to pre-interpolated conversion of data points
-        self.idx = []
-        for fr in self.lvl3hashframe:
-            self.idx.append(np.where((self.pre_post_idx >= fr) == True)[0][0])
+        self._get_prepost_idx()
 
         # Create plot object
         self.plot = Plot(self.x, self.y, self.z, self.lvl2hashframe, self.lvl3hashframe)
@@ -294,6 +292,12 @@ class Analysis:
         # END Padding
         self.lvl3hash.append("END")
 
+    # Get post-interpolated to pre-interpolated conversion of data points
+    def _get_prepost_idx(self):
+        self.idx = []
+        for fr in self.lvl3hashframe:
+            self.idx.append(np.where((self.pre_post_idx >= fr) == True)[0][0])
+
     @staticmethod
     def __find_angle(p1, p2, p3):
         p1 = np.array(p1)
@@ -339,6 +343,7 @@ class Analysis:
         self._lvl1hash()
         self._lvl2hash()
         self._lvl3hash()
+        self._get_prepost_idx()
         self.plot = Plot(self.x, self.y, self.z, self.lvl2hashframe, self.lvl3hashframe)
 
 
