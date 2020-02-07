@@ -686,7 +686,6 @@ class App(QtWidgets.QMainWindow):
                     out1 = np.array(list(map(str, self.analysis.lvl3hash)))
                     out2 = np.array(list(map(str, self.analysis.lvl3hashframe)))
                     out3 = np.array(list(map(str, self.analysis.idx)))
-                    out = np.vstack((out1, out2, out3)).T
                 else:
                     len_arr = max([len(self.analysis.lvl3hash), len(self.analysis.lvl3hashframe), len(self.analysis.idx)])
 
@@ -702,11 +701,14 @@ class App(QtWidgets.QMainWindow):
                     out3 = np.empty_like(tmpout3, shape=(len_arr,))
                     out3[:len(self.analysis.idx)] = tmpout3
 
-                    out = np.vstack((out1, out2, out3)).T
+                # Column of index
+                number = np.arange(1, len(out1) + 1)
 
+                # Output
+                out = np.vstack((number, out1, out2, out3)).T
                 with open(name[0] + '.csv', 'w') as handle:
                     wr = csv.writer(handle, quoting=csv.QUOTE_MINIMAL)
-                    wr.writerow(["label_of_segment", "starting_index_of_segment", "starting_index_of_segment_pre_interpolation"])
+                    wr.writerow(["Number", "label_of_segment", "starting_index_of_segment", "starting_index_of_segment_pre_interpolation"])
                     wr.writerows(out)
 
     def __exportcsv(self):
