@@ -690,7 +690,7 @@ class App(QtWidgets.QMainWindow):
                     len_arr = max([len(self.analysis.lvl3hash), len(self.analysis.lvl3hashframe), len(self.analysis.idx)])
 
                     tmpout1 = np.array(list(map(str, self.analysis.lvl3hash)))
-                    out1 = np.empty_like(tmpout1, shape = (len_arr,))
+                    out1 = np.empty_like(tmpout1, shape=(len_arr,))
                     out1[:len(self.analysis.lvl3hash)] = tmpout1
 
                     tmpout2 = np.array(list(map(str, self.analysis.lvl3hashframe)))
