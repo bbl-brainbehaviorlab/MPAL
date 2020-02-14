@@ -1393,7 +1393,7 @@ class Settings:
                                                        QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
                                                        QtWidgets.QMessageBox.No)
                 self.rerun = True if reply == QtWidgets.QMessageBox.Yes else False
-                new_settings = "# DO NOT CHANGE THE CONTENT OF THIS FILE UNLESS YOU KNOW WHAT YOU ARE DOING!!!\n\n" \
+                new_settings = "# DO NOT CHANGE THE CONTENT OF THIS FILE UNLESS YOU KNOW WHAT YOU ARE DOING!!!\n" \
                                "# IF ERROR OCCURS BECAUSE OF THIS FILE, SIMPLY DELETE THIS FILE THEN RUN THE APPLICATION TO RESET TO DEFAULT SETTINGS\n\n" \
                                "# Analysis settings parameters\n" \
                                "self.x_threshold = {}\n" \
