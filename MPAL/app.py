@@ -600,7 +600,7 @@ class App(QtWidgets.QMainWindow):
         interpolate_le.textChanged.connect(__textchange)
         layout3.addWidget(interpolate_le, 1, 2, 1, 1)
 
-        cm_lbl = QtWidgets.QLabel("cm (default: 0.5)", d)
+        cm_lbl = QtWidgets.QLabel("(default: 0.5)", d)
         layout3.addWidget(cm_lbl, 1, 3, 1, 1)
 
         # Separation line
