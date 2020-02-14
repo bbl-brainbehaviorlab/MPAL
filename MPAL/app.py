@@ -845,12 +845,12 @@ class App(QtWidgets.QMainWindow):
                "\tc) The faint red line shows the previous segment\n\n"\
                "3. Below the 3D trajectory plot shows a label that describes the heading direction of the\n"\
                "\tcurrent line segment\n"\
-               "\ta) If LEVEL-3/ LEVEL-2 PROCESSING is currently in display, three labels will be shown, each\n"\
+               "\ta) If LEVEL-1/ LEVEL-2 PROCESSING is currently in display, three labels will be shown, each\n"\
                "\t\tdescribing the line heading direction on one of the dimensions:\n"\
                "\t\ti)   X-dimension: F = Forward, B = Backward, - = No Change\n"\
                "\t\tii)  Y-dimension: L = Left, R = Right, - = No Change\n"\
                "\t\tiii) Z-dimension: U = Up, D = Down, - = No Change\n"\
-               "\tb) If LEVEL-1 PROCESSING is currently in display, one to three labels will be shown, each\n"\
+               "\tb) If LEVEL-3 PROCESSING is currently in display, one to three labels will be shown, each\n"\
                "\t\tdescribing the line heading direction on one of the dimensions (Uppercase letters show\n"\
                "\t\tthe main heading direction; Lowercase letters show a change in direction\n"\
                "\t\ti)   X-dimension: F/f = Forward, B/b = Backward\n"\
