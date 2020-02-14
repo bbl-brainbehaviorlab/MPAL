@@ -708,7 +708,7 @@ class App(QtWidgets.QMainWindow):
                 out = np.vstack((number, out1, out2, out3)).T
                 with open(name[0] + '.csv', 'w') as handle:
                     wr = csv.writer(handle, quoting=csv.QUOTE_MINIMAL)
-                    wr.writerow(["number", "label_of_segment", "starting_index_of_segment", "starting_index_of_segment_pre_interpolation"])
+                    wr.writerow(["number", "label_of_segment", "onset_index", "onset_index_pre_interpolation"])
                     wr.writerows(out)
 
     def __exportcsv(self):
