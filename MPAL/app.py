@@ -5,8 +5,13 @@ Libraries needed:
 numpy, scipy, pandas, matplotlib, pyqt5
 '''
 
+import os
+import csv
+import pickle
+
 from PyQt5 import QtWidgets, QtCore, QtGui
 import matplotlib
+
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D, proj3d
@@ -15,9 +20,6 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import numpy as np
 from scipy.io import savemat
 import pandas as pd
-import os
-import csv
-import pickle
 
 from analysis import *
 
@@ -460,11 +462,13 @@ class App(QtWidgets.QMainWindow):
                 self.zoom_lbl.setText(str(self.zoom))
                 self.m.axes.dist = 10
 
-                self.analysis = Analysis(self.file_path[0], self.col_x, self.col_y, self.col_z, self.settings.x_threshold,
+                self.analysis = Analysis(self.file_path[0], self.col_x, self.col_y, self.col_z,
+                                         self.settings.x_threshold,
                                          self.settings.y_threshold, self.settings.z_threshold,
                                          self.settings.main_direction_threshold,
                                          invert_x=self.invert_x, invert_y=self.invert_y, invert_z=self.invert_z,
-                                         header=self.header, smooth=self.smooth, interpolate=self.interpolate, interdist=self.interpolate_val)
+                                         header=self.header, smooth=self.smooth, interpolate=self.interpolate,
+                                         interdist=self.interpolate_val)
                 self.m.initplot(self.analysis.plot.initplot_lvl1(), title='3D trajectory (Level 1)',
                                 x_axis='X (Left/Right)', y_axis='Y (Forward/Backward)', z_axis='Z (Up/Down)',
                                 invert_x=self.invert_x, invert_y=self.invert_y, invert_z=self.invert_z)
@@ -596,7 +600,8 @@ class App(QtWidgets.QMainWindow):
         interpolate_le = QtWidgets.QLineEdit(str(self.interpolate_val), d)
         interpolate_le.setDisabled(not self.interpolate)
         interpolate_le.setMaxLength(6)
-        interpolate_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("(?=\.\d|\d)(?:\d+)?(?:\.?\d*)(?:[eE][+-]?\d+)?")))
+        interpolate_le.setValidator(
+            QtGui.QRegExpValidator(QtCore.QRegExp("(?=\.\d|\d)(?:\d+)?(?:\.?\d*)(?:[eE][+-]?\d+)?")))
         interpolate_le.textChanged.connect(__textchange)
         layout3.addWidget(interpolate_le, 1, 2, 1, 1)
 
@@ -687,7 +692,8 @@ class App(QtWidgets.QMainWindow):
                     out2 = np.array(list(map(str, self.analysis.lvl3hashframe)))
                     out3 = np.array(list(map(str, self.analysis.idx)))
                 else:
-                    len_arr = max([len(self.analysis.lvl3hash), len(self.analysis.lvl3hashframe), len(self.analysis.idx)])
+                    len_arr = max(
+                        [len(self.analysis.lvl3hash), len(self.analysis.lvl3hashframe), len(self.analysis.idx)])
 
                     tmpout1 = np.array(list(map(str, self.analysis.lvl3hash)))
                     out1 = np.empty_like(tmpout1, shape=(len_arr,))
@@ -836,31 +842,31 @@ class App(QtWidgets.QMainWindow):
     # TODO: Beautify the dialog
     def __howtouse(self):
         # Create text
-        text = "Instructions\n"\
-               "---------------------------------------------------------------------------------------------\n"\
-               "1. Open a .csv file containing three columns (x, y, z coordinates) with NO header\n\n"\
-               "2. The middle of the screen displays a line segment of the 3D trajectory\n"\
-               "\ta) The blue line shows the current segment\n"\
-               "\tb) The red cross shows the heading direction\n"\
-               "\tc) The faint red line shows the previous segment\n\n"\
-               "3. Below the 3D trajectory plot shows a label that describes the heading direction of the\n"\
-               "\tcurrent line segment\n"\
-               "\ta) If LEVEL-1/ LEVEL-2 PROCESSING is currently in display, three labels will be shown, each\n"\
-               "\t\tdescribing the line heading direction on one of the dimensions:\n"\
-               "\t\ti)   X-dimension: F = Forward, B = Backward, - = No Change\n"\
-               "\t\tii)  Y-dimension: L = Left, R = Right, - = No Change\n"\
-               "\t\tiii) Z-dimension: U = Up, D = Down, - = No Change\n"\
-               "\tb) If LEVEL-3 PROCESSING is currently in display, one to three labels will be shown, each\n"\
-               "\t\tdescribing the line heading direction on one of the dimensions (Uppercase letters show\n"\
-               "\t\tthe main heading direction; Lowercase letters show a change in direction\n"\
-               "\t\ti)   X-dimension: F/f = Forward, B/b = Backward\n"\
-               "\t\tii)  Y-dimension: L/l = Left, R/r = Right\n"\
-               "\t\tiii) Z-dimension: U/u = Up, D/d = Down\n\n"\
-               "4. At the bottom right of the GUI, you may scroll to the previous/next line segment. You may also\n"\
-               "\ttype the segment number manually into the text field\n\n"\
-               "5. At the bottom left of the GUI, you may zoom in/out of the middle plot\n\n"\
-               "6. If you wish to make amendments to the label predictions, click the change label button at the\n"\
-               "\tbottom, this will create a pop-up dialog window that allows you to change the labels\n\n"\
+        text = "Instructions\n" \
+               "---------------------------------------------------------------------------------------------\n" \
+               "1. Open a .csv file containing three columns (x, y, z coordinates)\n\n" \
+               "2. The middle of the screen displays a line segment of the 3D trajectory\n" \
+               "\ta) The blue line shows the current segment\n" \
+               "\tb) The red dot shows the heading direction\n" \
+               "\tc) The faint red line shows the previous segment\n\n" \
+               "3. Below the 3D trajectory plot shows a label that describes the heading direction of the\n" \
+               "\tcurrent line segment\n" \
+               "\ta) If LEVEL-1/ LEVEL-2 PROCESSING is currently in display, three labels will be shown, each\n" \
+               "\t\tdescribing the line heading direction on one of the dimensions:\n" \
+               "\t\ti)   X-dimension: F = Forward, B = Backward, - = No Change\n" \
+               "\t\tii)  Y-dimension: L = Left, R = Right, - = No Change\n" \
+               "\t\tiii) Z-dimension: U = Up, D = Down, - = No Change\n" \
+               "\tb) If LEVEL-3 PROCESSING is currently in display, one to three labels will be shown, each\n" \
+               "\t\tdescribing the line heading direction on one of the dimensions (Uppercase letters show\n" \
+               "\t\tthe main heading direction; Lowercase letters show a change in direction\n" \
+               "\t\ti)   X-dimension: F/f = Forward, B/b = Backward\n" \
+               "\t\tii)  Y-dimension: L/l = Left, R/r = Right\n" \
+               "\t\tiii) Z-dimension: U/u = Up, D/d = Down\n\n" \
+               "4. At the bottom right of the GUI, you may scroll to the previous/next line segment. You may also\n" \
+               "\ttype the segment number manually into the text field\n\n" \
+               "5. At the bottom left of the GUI, you may zoom in/out of the middle plot\n\n" \
+               "6. If you wish to make amendments to the label predictions, click the change label button at the\n" \
+               "\tbottom, this will create a pop-up dialog window that allows you to change the labels\n\n" \
                "7. Save the output pattern string as a .pkl/.mat/.csv file\n"
 
         # Create dialog
@@ -1232,25 +1238,25 @@ class LabelChange(QtWidgets.QDialog):
                 hash = self.analysis.lvl2hash
 
             if self.L_rb.isChecked():
-                hash[1] = hash[1][:self.pos] + self.L_rb.text() + hash[1][self.pos+1:]
+                hash[1] = hash[1][:self.pos] + self.L_rb.text() + hash[1][self.pos + 1:]
             elif self.R_rb.isChecked():
-                hash[1] = hash[1][:self.pos] + self.R_rb.text() + hash[1][self.pos+1:]
+                hash[1] = hash[1][:self.pos] + self.R_rb.text() + hash[1][self.pos + 1:]
             elif self.ny_rb.isChecked():
-                hash[1] = hash[1][:self.pos] + self.ny_rb.text() + hash[1][self.pos+1:]
+                hash[1] = hash[1][:self.pos] + self.ny_rb.text() + hash[1][self.pos + 1:]
 
             if self.F_rb.isChecked():
-                hash[0] = hash[0][:self.pos] + self.F_rb.text() + hash[0][self.pos+1:]
+                hash[0] = hash[0][:self.pos] + self.F_rb.text() + hash[0][self.pos + 1:]
             elif self.B_rb.isChecked():
-                hash[0] = hash[0][:self.pos] + self.B_rb.text() + hash[0][self.pos+1:]
+                hash[0] = hash[0][:self.pos] + self.B_rb.text() + hash[0][self.pos + 1:]
             elif self.nx_rb.isChecked():
-                hash[0] = hash[0][:self.pos] + self.nx_rb.text() + hash[0][self.pos+1:]
+                hash[0] = hash[0][:self.pos] + self.nx_rb.text() + hash[0][self.pos + 1:]
 
             if self.U_rb.isChecked():
-                hash[2] = hash[2][:self.pos] + self.U_rb.text() + hash[2][self.pos+1:]
+                hash[2] = hash[2][:self.pos] + self.U_rb.text() + hash[2][self.pos + 1:]
             elif self.D_rb.isChecked():
-                hash[2] = hash[2][:self.pos] + self.D_rb.text() + hash[2][self.pos+1:]
+                hash[2] = hash[2][:self.pos] + self.D_rb.text() + hash[2][self.pos + 1:]
             elif self.nz_rb.isChecked():
-                hash[2] = hash[2][:self.pos] + self.nz_rb.text() + hash[2][self.pos+1:]
+                hash[2] = hash[2][:self.pos] + self.nz_rb.text() + hash[2][self.pos + 1:]
 
             if self.processing_level == 1:
                 self.analysis.lvl1hash = hash
@@ -1343,7 +1349,8 @@ class Settings:
         self.d.setWindowModality(QtCore.Qt.ApplicationModal)
 
         # Initialize tabs
-        self.analysistab = AnalysisSettingsWidget(self.x_threshold, self.y_threshold, self.z_threshold, self.main_direction_threshold)
+        self.analysistab = AnalysisSettingsWidget(self.x_threshold, self.y_threshold, self.z_threshold,
+                                                  self.main_direction_threshold)
         self.plottab = PlotSettingsWidget(self.dpi)
 
         # Tab widget
@@ -1401,8 +1408,8 @@ class Settings:
                                "self.z_threshold = {}\n" \
                                "self.main_direction_threshold = {}\n\n" \
                                "# Plot settings parameters\n" \
-                               "self.dpi = {}".format(self.x_threshold, self.y_threshold, self.z_threshold, self.main_direction_threshold,
-                                                      self.dpi)
+                               "self.dpi = {}".format(self.x_threshold, self.y_threshold, self.z_threshold,
+                                                      self.main_direction_threshold, self.dpi)
                 with open(os.path.join(script_dir, "config/settings.config"), 'w') as f:
                     f.writelines(new_settings)
 
@@ -1514,7 +1521,7 @@ class PlotCanvas(FigureCanvas):
 
         self.axes.set_aspect("equal")
         self.axes.set_title(self.title)
-        #self.axes.set_title("[Distance: {}CM]".format(dist), loc="right")
+        # self.axes.set_title("[Distance: {}CM]".format(dist), loc="right")
         self.axes.set_xlabel(self.x_axis)
         self.axes.set_ylabel(self.y_axis)
         self.axes.set_zlabel(self.z_axis)
@@ -1548,7 +1555,7 @@ class PlotCanvas(FigureCanvas):
         # Set up the axes and title
         self.axes.set_aspect("equal")
         self.axes.set_title(self.title)
-        #self.axes.set_title("[Distance: {}CM]".format(dist), loc="right")
+        # self.axes.set_title("[Distance: {}CM]".format(dist), loc="right")
         self.axes.set_xlabel(self.x_axis)
         self.axes.set_ylabel(self.y_axis)
         self.axes.set_zlabel(self.z_axis)
@@ -1674,6 +1681,7 @@ if __name__ == "__main__":
     script_dir = os.path.dirname(__file__)
 
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     ui = App()
     sys.exit(app.exec_())

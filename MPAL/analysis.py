@@ -68,9 +68,9 @@ class Analysis:
 
         # Read .csv file and assign to variables
         dataset = pd.read_csv(file, header=header, engine="python")
-        x = dataset.iloc[:, col_x-1].values
-        y = dataset.iloc[:, col_y-1].values
-        z = dataset.iloc[:, col_z-1].values
+        x = dataset.iloc[:, col_x - 1].values
+        y = dataset.iloc[:, col_y - 1].values
+        z = dataset.iloc[:, col_z - 1].values
         self.original_corr = np.asarray([x, y, z]).T
 
         # Preprocessing
@@ -107,11 +107,12 @@ class Analysis:
         # Loop through point duplets
         for i in range(len(self.x) - 1):
             # Compute directional vector
-            direction_vector = [self.x[i+1] - self.x[i], self.y[i+1] - self.y[i], self.z[i+1] - self.z[i]]
+            direction_vector = [self.x[i + 1] - self.x[i], self.y[i + 1] - self.y[i], self.z[i + 1] - self.z[i]]
 
             # Compute angular change in x/y and z
             angle1 = math.degrees(math.atan2(direction_vector[1], direction_vector[0]))
-            angle2 = math.degrees(math.atan2(direction_vector[2], math.sqrt(direction_vector[0]**2 + direction_vector[1]**2)))
+            angle2 = math.degrees(
+                math.atan2(direction_vector[2], math.sqrt(direction_vector[0] ** 2 + direction_vector[1] ** 2)))
 
             # Determine left/right
             if abs(angle1) <= self.x_threshold:
@@ -147,7 +148,7 @@ class Analysis:
 
         # Compute parameters
         for i in range(1, len(self.x) - 1):
-            self.parameters[i, 3] = self.__find_angle(self.X[i-1], self.X[i], self.X[i+1])
+            self.parameters[i, 3] = self.__find_angle(self.X[i - 1], self.X[i], self.X[i + 1])
 
         L, R, k = self.__curvature()
         self.parameters[:, 4] = L
@@ -189,9 +190,9 @@ class Analysis:
         # Remove 'n'
         # Change in direction is defined as Level-2 consecutive grouping smaller than main_direction_threshold
         # Change in direction is denoted with lowercase
-        for i in range(len(self.lvl2hashframe)-1):
+        for i in range(len(self.lvl2hashframe) - 1):
             # Line segment is larger than main_direction threshold
-            if self.lvl2hashframe[i+1] - self.lvl2hashframe[i] >= self.main_direction_threshold:
+            if self.lvl2hashframe[i + 1] - self.lvl2hashframe[i] >= self.main_direction_threshold:
                 temp = self.lvl2hash[0][i] + self.lvl2hash[1][i] + self.lvl2hash[2][i]
                 # Regex for substituting 'n' with blank
                 temp = re.sub('[-]', '', temp)
@@ -373,24 +374,25 @@ class Plot:
         return [mainplot, self.max_min]
 
     def updateplot_lvl1(self, node):
-        mainplot = [self.x[node:node+2], self.y[node:node+2], self.z[node:node+2]]
-        faintplot_tail = [self.x[node-1:node+1], self.y[node-1:node+1], self.z[node-1:node+1]] if node != 0 else None
+        mainplot = [self.x[node:node + 2], self.y[node:node + 2], self.z[node:node + 2]]
+        faintplot_tail = [self.x[node - 1:node + 1], self.y[node - 1:node + 1],
+                          self.z[node - 1:node + 1]] if node != 0 else None
         return [mainplot, faintplot_tail, self.max_min]
 
     def updateplot_lvl2(self, node):
-        mainplot = [self.x[self.lvl2hashframe[node]:self.lvl2hashframe[node+1]+1],
-                    self.y[self.lvl2hashframe[node]:self.lvl2hashframe[node+1]+1],
-                    self.z[self.lvl2hashframe[node]:self.lvl2hashframe[node+1]+1]]
-        faintplot_tail = [self.x[self.lvl2hashframe[node]-1:self.lvl2hashframe[node]+1],
-                          self.y[self.lvl2hashframe[node]-1:self.lvl2hashframe[node]+1],
-                          self.z[self.lvl2hashframe[node]-1:self.lvl2hashframe[node]+1]] if node != 0 else None
+        mainplot = [self.x[self.lvl2hashframe[node]:self.lvl2hashframe[node + 1] + 1],
+                    self.y[self.lvl2hashframe[node]:self.lvl2hashframe[node + 1] + 1],
+                    self.z[self.lvl2hashframe[node]:self.lvl2hashframe[node + 1] + 1]]
+        faintplot_tail = [self.x[self.lvl2hashframe[node] - 1:self.lvl2hashframe[node] + 1],
+                          self.y[self.lvl2hashframe[node] - 1:self.lvl2hashframe[node] + 1],
+                          self.z[self.lvl2hashframe[node] - 1:self.lvl2hashframe[node] + 1]] if node != 0 else None
         return [mainplot, faintplot_tail, self.max_min]
 
     def updateplot_lvl3(self, node):
-        mainplot = [self.x[self.lvl3hashframe[node]:self.lvl3hashframe[node+1]+1],
-                    self.y[self.lvl3hashframe[node]:self.lvl3hashframe[node+1]+1],
-                    self.z[self.lvl3hashframe[node]:self.lvl3hashframe[node+1]+1]]
-        faintplot_tail = [self.x[self.lvl3hashframe[node]-1:self.lvl3hashframe[node]+1],
-                          self.y[self.lvl3hashframe[node]-1:self.lvl3hashframe[node]+1],
-                          self.z[self.lvl3hashframe[node]-1:self.lvl3hashframe[node]+1]] if node != 0 else None
+        mainplot = [self.x[self.lvl3hashframe[node]:self.lvl3hashframe[node + 1] + 1],
+                    self.y[self.lvl3hashframe[node]:self.lvl3hashframe[node + 1] + 1],
+                    self.z[self.lvl3hashframe[node]:self.lvl3hashframe[node + 1] + 1]]
+        faintplot_tail = [self.x[self.lvl3hashframe[node] - 1:self.lvl3hashframe[node] + 1],
+                          self.y[self.lvl3hashframe[node] - 1:self.lvl3hashframe[node] + 1],
+                          self.z[self.lvl3hashframe[node] - 1:self.lvl3hashframe[node] + 1]] if node != 0 else None
         return [mainplot, faintplot_tail, self.max_min]
