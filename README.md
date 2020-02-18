@@ -1,5 +1,5 @@
 # MPAL (Motion Pattern Analysis)
-#### A Python Open Source Application for the Trajectory Analysis of Hand Motion
+#### A Python Open Source Application for the Analysis of Hand Motion
 
 ## What is MPAL?
 MPAL is a Python open-source and interactive application designed for analyzing hand motion. This application takes 3D
