@@ -3,9 +3,7 @@ import setuptools
 setuptools.setup(
     name="MPAL",
     version="1.0.0",
-    author="Clive Lo",
-    author_email="clivelo.kw@gmail.com",
-    url="https://github.com/clivelo/MPAL",
+    url="https://github.com/bbl-brainbehaviorlab/MPAL",
     packages=setuptools.find_packages(),
     description="Motion Pattern Analysis (MPAL): A Python Open Source Application for the Trajectory Analysis of Hand Motion",
     long_description=open("README.md").read(),
