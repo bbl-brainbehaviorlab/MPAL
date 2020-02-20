@@ -136,7 +136,7 @@ class App(QtWidgets.QMainWindow):
         self.zoom_out_btn.setShortcut('Down')
         self.zoom_out_btn.setStatusTip("Zoom out")
         self.zoom_out_btn.setDefault(False)
-        self.zoom_out_btn.clicked.connect(self.__zoom_out)
+        self.zoom_out_btn.clicked.connect(self.zoom_out)
         bottom_left_layout.addWidget(self.zoom_out_btn)
 
         self.zoom_lbl = QtWidgets.QLabel("1.0", main_widget)
@@ -154,7 +154,7 @@ class App(QtWidgets.QMainWindow):
         self.zoom_in_btn.setShortcut('Up')
         self.zoom_in_btn.setStatusTip("Zoom in")
         self.zoom_in_btn.setDefault(False)
-        self.zoom_in_btn.clicked.connect(self.__zoom_in)
+        self.zoom_in_btn.clicked.connect(self.zoom_in)
         bottom_left_layout.addWidget(self.zoom_in_btn)
         bottom_left_layout.addStretch()
 
@@ -167,7 +167,7 @@ class App(QtWidgets.QMainWindow):
         self.change_btn.setStatusTip("Make changes to labels")
         self.change_btn.setDefault(False)
         self.change_btn.setDisabled(True)
-        self.change_btn.clicked.connect(self.__change_label)
+        self.change_btn.clicked.connect(self.change_label)
         bottom_mid_layout.addWidget(self.change_btn)
         bottom_mid_layout.addStretch()
 
@@ -182,7 +182,7 @@ class App(QtWidgets.QMainWindow):
         self.scroll_left_btn.setStatusTip("Scroll to the previous segment")
         self.scroll_left_btn.setDefault(False)
         self.scroll_left_btn.setDisabled(True)
-        self.scroll_left_btn.clicked.connect(self.__scroll_left)
+        self.scroll_left_btn.clicked.connect(self.scroll_left)
         bottom_right_layout.addWidget(self.scroll_left_btn)
 
         self.scroll_txt_le = QtWidgets.QLineEdit("0", main_widget)
@@ -193,8 +193,8 @@ class App(QtWidgets.QMainWindow):
         self.scroll_txt_le.setAlignment(QtCore.Qt.AlignCenter)
         self.scroll_txt_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("[0-9]\\d{0,8}")))
         self.scroll_txt_le.setReadOnly(True)
-        self.scroll_txt_le.textChanged.connect(self.__scroll_textChange)
-        self.scroll_txt_le.returnPressed.connect(self.__scroll_enter)
+        self.scroll_txt_le.textChanged.connect(self.scroll_textChange)
+        self.scroll_txt_le.returnPressed.connect(self.scroll_enter)
         self.scroll_txt_le.installEventFilter(self)
         bottom_right_layout.addWidget(self.scroll_txt_le)
 
@@ -207,7 +207,7 @@ class App(QtWidgets.QMainWindow):
         self.scroll_right_btn.setStatusTip("Scroll to the next segment")
         self.scroll_right_btn.setDefault(False)
         self.scroll_right_btn.setDisabled(True)
-        self.scroll_right_btn.clicked.connect(self.__scroll_right)
+        self.scroll_right_btn.clicked.connect(self.scroll_right)
         bottom_right_layout.addWidget(self.scroll_right_btn)
         bottom_right_layout.addStretch()
 
@@ -227,33 +227,33 @@ class App(QtWidgets.QMainWindow):
 
         newButton = QtWidgets.QAction('&New', self)
         newButton.setStatusTip("Clear windows")
-        newButton.triggered.connect(self.__newfile)
+        newButton.triggered.connect(self.newfile)
         file_menu.addAction(newButton)
 
         openButton = QtWidgets.QAction('&Open...', self)
         openButton.setShortcut('Ctrl+O')
         openButton.setStatusTip("Open file")
-        openButton.triggered.connect(self.__openfile)
+        openButton.triggered.connect(self.fileopen)
         file_menu.addAction(openButton)
 
         self.exportcsvButton = QtWidgets.QAction('&Export Coordinates', self)
         self.exportcsvButton.setStatusTip("Export trajectory coordinates to CSV")
         self.exportcsvButton.setDisabled(True)
-        self.exportcsvButton.triggered.connect(self.__exportcsv)
+        self.exportcsvButton.triggered.connect(self.exportcsv)
         file_menu.addAction(self.exportcsvButton)
 
         self.saveButton = QtWidgets.QAction('&Save Results...', self)
         self.saveButton.setShortcut('Ctrl+S')
         self.saveButton.setStatusTip("Save results")
         self.saveButton.setDisabled(True)
-        self.saveButton.triggered.connect(self.__save)
+        self.saveButton.triggered.connect(self.save)
         file_menu.addAction(self.saveButton)
 
         # TODO: save trajectory animation
         self.saveTrajectoryButton = QtWidgets.QAction('&Save Trajectory Animation', self)
         self.saveTrajectoryButton.setStatusTip("Save trajectory animation")
         self.saveTrajectoryButton.setDisabled(True)
-        #self.saveTrajectoryButton.triggered.connect(self.__savetrajectory)
+        #self.saveTrajectoryButton.triggered.connect(self.savetrajectory)
         file_menu.addAction(self.saveTrajectoryButton)
 
         file_menu.addSeparator()
@@ -276,14 +276,14 @@ class App(QtWidgets.QMainWindow):
         self.jumpstartButton = QtWidgets.QAction('&Jump to Front', self)
         self.jumpstartButton.setShortcut('Ctrl+Left')
         self.jumpstartButton.setStatusTip("Jump to the first label")
-        self.jumpstartButton.triggered.connect(self.__jumpstart)
+        self.jumpstartButton.triggered.connect(self.jumpstart)
         self.jumpstartButton.setDisabled(True)
         view_menu.addAction(self.jumpstartButton)
 
         self.jumpendButton = QtWidgets.QAction('&Jump to End', self)
         self.jumpendButton.setShortcut('Ctrl+Right')
         self.jumpendButton.setStatusTip("Jump to the last label")
-        self.jumpendButton.triggered.connect(self.__jumpend)
+        self.jumpendButton.triggered.connect(self.jumpend)
         self.jumpendButton.setDisabled(True)
         view_menu.addAction(self.jumpendButton)
 
@@ -292,21 +292,21 @@ class App(QtWidgets.QMainWindow):
         self.lvl3Button = QtWidgets.QAction('&Show Level 1 Processing', self)
         self.lvl3Button.setShortcut('Ctrl+1')
         self.lvl3Button.setStatusTip("Display level 1 processing trajectory and labels")
-        self.lvl3Button.triggered.connect(self.__lvl1switch)
+        self.lvl3Button.triggered.connect(self.lvl1switch)
         self.lvl3Button.setDisabled(True)
         view_menu.addAction(self.lvl3Button)
 
         self.lvl2Button = QtWidgets.QAction('&Show Level 2 Processing', self)
         self.lvl2Button.setShortcut('Ctrl+2')
         self.lvl2Button.setStatusTip("Display level 2 processing trajectory and labels")
-        self.lvl2Button.triggered.connect(self.__lvl2switch)
+        self.lvl2Button.triggered.connect(self.lvl2switch)
         self.lvl2Button.setDisabled(True)
         view_menu.addAction(self.lvl2Button)
 
         self.lvl1Button = QtWidgets.QAction('&Show Level 3 Processing', self)
         self.lvl1Button.setShortcut('Ctrl+3')
         self.lvl1Button.setStatusTip("Display level 3 processing trajectory and labels")
-        self.lvl1Button.triggered.connect(self.__lvl3switch)
+        self.lvl1Button.triggered.connect(self.lvl3switch)
         self.lvl1Button.setDisabled(True)
         view_menu.addAction(self.lvl1Button)
 
@@ -315,7 +315,7 @@ class App(QtWidgets.QMainWindow):
         self.animationButton = QtWidgets.QAction('&Show Animated Trajectory', self)
         self.animationButton.setShortcut('Ctrl+T')
         self.animationButton.setStatusTip("Display an animated trajactory")
-        self.animationButton.triggered.connect(self.__trajectory)
+        self.animationButton.triggered.connect(self.trajectory)
         self.animationButton.setDisabled(True)
         view_menu.addAction(self.animationButton)
 
@@ -326,14 +326,14 @@ class App(QtWidgets.QMainWindow):
 
         settingsButton = QtWidgets.QAction('&Settings', self)
         settingsButton.setStatusTip("Edit settings")
-        settingsButton.triggered.connect(self.__settings)
+        settingsButton.triggered.connect(self.open_settings)
         options_menu.addAction(settingsButton)
 
         options_menu.addSeparator()
 
         self.rerunButton = QtWidgets.QAction('&Re-run Analysis', self)
         self.rerunButton.setStatusTip("Re-run the analysis (ALL CHANGES WILL BE LOST!)")
-        self.rerunButton.triggered.connect(self.__rerun)
+        self.rerunButton.triggered.connect(self.rerun)
         self.rerunButton.setDisabled(True)
         options_menu.addAction(self.rerunButton)
 
@@ -344,17 +344,17 @@ class App(QtWidgets.QMainWindow):
 
         aboutButton = QtWidgets.QAction('&About {}'.format(appname), self)
         aboutButton.setStatusTip("About {}".format(appname))
-        aboutButton.triggered.connect(self.__about)
+        aboutButton.triggered.connect(self.about)
         help_menu.addAction(aboutButton)
 
         howtouseButton = QtWidgets.QAction('&How to use?', self)
         howtouseButton.setStatusTip("Instructions on how to use this application")
-        howtouseButton.triggered.connect(self.__howtouse)
+        howtouseButton.triggered.connect(self.howtouse)
         help_menu.addAction(howtouseButton)
 
         menubar.addMenu(help_menu)
 
-    def __newfile(self):
+    def newfile(self):
         self.processing_level = 1
         self.current_pos = 0
         self.trajlabel.setText('/')
@@ -379,7 +379,7 @@ class App(QtWidgets.QMainWindow):
         self.m.clearplot()
         self.operating = False
 
-    def __openfile(self):
+    def fileopen(self):
         # Set open file flag to false
         self.openfile.valid = False
 
@@ -432,7 +432,7 @@ class App(QtWidgets.QMainWindow):
             self.rerunButton.setDisabled(False)
             self.operating = True
 
-    def __save(self):
+    def save(self):
         name = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", self.openfile.file_path[:-4] + "_MPAL",
                                                      "Pickle Files (*.pkl);;MATLAB Files (*.mat);;CSV Files (*.csv)",
                                                      options=QtWidgets.QFileDialog.DontUseNativeDialog)
@@ -499,7 +499,7 @@ class App(QtWidgets.QMainWindow):
                     wr.writerow(["number", "label_of_segment", "onset_index", "onset_index_pre_interpolation"])
                     wr.writerows(out)
 
-    def __exportcsv(self):
+    def exportcsv(self):
         name = QtWidgets.QFileDialog.getSaveFileName(self, "Export coordinates",
                                                      self.openfile.file_path[:-4] + "_COORDS",
                                                      "CSV Files (*.csv)",
@@ -510,7 +510,7 @@ class App(QtWidgets.QMainWindow):
                 writer = csv.writer(handle, quoting=csv.QUOTE_NONE)
                 writer.writerows(self.analysis.X)
 
-    def __jumpstart(self):
+    def jumpstart(self):
         if self.operating:
             self.current_pos = 0
             self.scroll_txt_le.setText("0")
@@ -528,7 +528,7 @@ class App(QtWidgets.QMainWindow):
                 self.m.updateplot(self.analysis.plot.updateplot_lvl3(self.current_pos))
                 self.trajlabel.setText(self.analysis.lvl3hash[self.current_pos])
 
-    def __jumpend(self):
+    def jumpend(self):
         if self.operating:
             if self.processing_level == 1:
                 self.current_pos = len(self.analysis.lvl1hash[0]) - 2
@@ -550,7 +550,7 @@ class App(QtWidgets.QMainWindow):
                 self.m.updateplot(self.analysis.plot.updateplot_lvl3(self.current_pos))
                 self.trajlabel.setText(self.analysis.lvl3hash[self.current_pos])
 
-    def __lvl1switch(self):
+    def lvl1switch(self):
         if self.processing_level != 1:
             self.processing_level = 1
             self.current_pos = 0
@@ -563,7 +563,7 @@ class App(QtWidgets.QMainWindow):
                                    self.analysis.lvl1hash[1][0] +
                                    self.analysis.lvl1hash[2][0])
 
-    def __lvl2switch(self):
+    def lvl2switch(self):
         if self.processing_level != 2:
             self.processing_level = 2
             self.current_pos = 0
@@ -576,7 +576,7 @@ class App(QtWidgets.QMainWindow):
                                    self.analysis.lvl2hash[1][0] +
                                    self.analysis.lvl2hash[2][0])
 
-    def __lvl3switch(self):
+    def lvl3switch(self):
         if self.processing_level != 3:
             self.processing_level = 3
             self.current_pos = 0
@@ -587,17 +587,17 @@ class App(QtWidgets.QMainWindow):
                             invert_z=self.openfile.invert_z)
             self.trajlabel.setText(self.analysis.lvl3hash[0])
 
-    def __trajectory(self):
+    def trajectory(self):
         traj = Trajectory(self.analysis.x, self.analysis.y, self.analysis.z,
                           self.openfile.invert_x, self.openfile.invert_y, self.openfile.invert_z)
 
-    def __settings(self):
+    def open_settings(self):
         self.settings.change()
         if self.operating:
-            if self.settings.rerun: self.__rerun()
+            if self.settings.rerun: self.rerun()
 
     # Re-run analysis with new thresholds from settings
-    def __rerun(self):
+    def rerun(self):
         if self.operating:
             # Set new thresholds of analysis object
             self.analysis.x_threshold = self.settings.x_threshold
@@ -620,7 +620,7 @@ class App(QtWidgets.QMainWindow):
                                    self.analysis.lvl1hash[1][0] +
                                    self.analysis.lvl1hash[2][0])
 
-    def __about(self):
+    def about(self):
         QtWidgets.QMessageBox.about(self, "About {}".format(appname),
                                     "<b>{} (Version {})</b><br>"
                                     "First release on {}<br>"
@@ -628,7 +628,7 @@ class App(QtWidgets.QMainWindow):
                                     format(appname, version, release_date, update_date))
 
     # TODO: Beautify the dialog
-    def __howtouse(self):
+    def howtouse(self):
         # Create text
         text = "Instructions\n" \
                "---------------------------------------------------------------------------------------------\n" \
@@ -689,7 +689,7 @@ class App(QtWidgets.QMainWindow):
 
     # TODO: change zooming method
     # Action for zooming out
-    def __zoom_out(self):
+    def zoom_out(self):
         if self.operating:
             if self.zoom >= 0.2:
                 self.m.axes.dist += 1
@@ -703,7 +703,7 @@ class App(QtWidgets.QMainWindow):
                     self.m.updateplot(self.analysis.plot.updateplot_lvl1(self.current_pos))
 
     # Action for zooming in
-    def __zoom_in(self):
+    def zoom_in(self):
         if self.operating:
             if self.zoom <= 1.9:
                 self.m.axes.dist -= 1
@@ -717,7 +717,7 @@ class App(QtWidgets.QMainWindow):
                     self.m.updateplot(self.analysis.plot.updateplot_lvl1(self.current_pos))
 
     # Action for scroll left
-    def __scroll_left(self):
+    def scroll_left(self):
         if self.operating:
             if self.current_pos > 0:
                 self.current_pos -= 1
@@ -737,7 +737,7 @@ class App(QtWidgets.QMainWindow):
                     self.trajlabel.setText(self.analysis.lvl3hash[self.current_pos])
 
     # Action for scroll right
-    def __scroll_right(self):
+    def scroll_right(self):
         if self.operating:
             if self.processing_level == 1:
                 if self.current_pos < len(self.analysis.lvl1hash[0]) - 2:
@@ -763,7 +763,7 @@ class App(QtWidgets.QMainWindow):
                     self.trajlabel.setText(self.analysis.lvl3hash[self.current_pos])
 
     # Action for hitting enter on scroll line edit
-    def __scroll_enter(self):
+    def scroll_enter(self):
         if self.operating:
             if self.scroll_txt_le.text() != "":
                 if self.processing_level == 1:
@@ -788,7 +788,7 @@ class App(QtWidgets.QMainWindow):
                 self.scroll_txt_le.clearFocus()
 
     # Action for detecting text change on scroll line edit (to prevent passing upper boundary)
-    def __scroll_textChange(self):
+    def scroll_textChange(self):
         if self.operating:
             if self.scroll_txt_le.text() != "":
                 if self.processing_level == 1:
@@ -813,7 +813,7 @@ class App(QtWidgets.QMainWindow):
                     self.scroll_right_btn.setDisabled(False)
 
     # Logic for changing the labels
-    def __change_label(self):
+    def change_label(self):
         labelchange = LabelChange(self.current_pos, self.analysis, self.processing_level, self.trajlabel)
 
     # Detect focus out
@@ -891,12 +891,12 @@ class OpenFile(QtWidgets.QDialog):
         layout1.addWidget(file_lbl, 0, 0, 1, 2)
 
         self.file_le = QtWidgets.QLineEdit("", self.d)
-        self.file_le.textChanged.connect(partial(self.__textchange))
+        self.file_le.textChanged.connect(partial(self.textchange))
         layout1.addWidget(self.file_le, 1, 0, 1, 1)
 
         file_btn = QtWidgets.QPushButton("...", self.d)
         file_btn.setObjectName("1")
-        file_btn.clicked.connect(partial(self.__selectfile, file_btn.objectName()))
+        file_btn.clicked.connect(partial(self.selectfile, file_btn.objectName()))
         layout1.addWidget(file_btn, 1, 1, 1, 1)
 
         # Select columns
@@ -906,7 +906,7 @@ class OpenFile(QtWidgets.QDialog):
         self.header_cb = QtWidgets.QCheckBox("Header? ", self.d)
         self.header_cb.setObjectName('1')
         self.header_cb.setChecked(False if self.header is None else True)
-        self.header_cb.stateChanged.connect(partial(self.__statechange, self.header_cb.objectName()))
+        self.header_cb.stateChanged.connect(partial(self.statechange, self.header_cb.objectName()))
         layout2.addWidget(self.header_cb, 1, 0, 1, 2)
 
         header_lbl = QtWidgets.QLabel("Row: ", self.d)
@@ -917,7 +917,7 @@ class OpenFile(QtWidgets.QDialog):
         self.header_le.setMaxLength(2)
         self.header_le.setText("1" if self.header is None else str(self.header))
         self.header_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.header_le.textChanged.connect(partial(self.__textchange))
+        self.header_le.textChanged.connect(partial(self.textchange))
         layout2.addWidget(self.header_le, 1, 3, 1, 1)
 
         col_x_lbl = QtWidgets.QLabel("X-axis (L/R): ", self.d)
@@ -926,7 +926,7 @@ class OpenFile(QtWidgets.QDialog):
         self.col_x_le = QtWidgets.QLineEdit(str(self.col_x), self.d)
         self.col_x_le.setMaxLength(2)
         self.col_x_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.col_x_le.textChanged.connect(partial(self.__textchange))
+        self.col_x_le.textChanged.connect(partial(self.textchange))
         layout2.addWidget(self.col_x_le, 2, 1, 1, 1)
 
         col_y_lbl = QtWidgets.QLabel("Y-axis (F/B): ", self.d)
@@ -935,7 +935,7 @@ class OpenFile(QtWidgets.QDialog):
         self.col_y_le = QtWidgets.QLineEdit(str(self.col_y), self.d)
         self.col_y_le.setMaxLength(2)
         self.col_y_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.col_y_le.textChanged.connect(partial(self.__textchange))
+        self.col_y_le.textChanged.connect(partial(self.textchange))
         layout2.addWidget(self.col_y_le, 2, 3, 1, 1)
 
         col_z_lbl = QtWidgets.QLabel("Z-axis (U/D): ", self.d)
@@ -944,7 +944,7 @@ class OpenFile(QtWidgets.QDialog):
         self.col_z_le = QtWidgets.QLineEdit(str(self.col_z), self.d)
         self.col_z_le.setMaxLength(2)
         self.col_z_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.col_z_le.textChanged.connect(partial(self.__textchange))
+        self.col_z_le.textChanged.connect(partial(self.textchange))
         layout2.addWidget(self.col_z_le, 2, 5, 1, 1)
 
         # Separation line
@@ -958,23 +958,23 @@ class OpenFile(QtWidgets.QDialog):
         layout3.addWidget(ref_file_lbl, 0, 0, 1, 2)
 
         self.ref_file_le1 = QtWidgets.QLineEdit("", self.d)
-        self.ref_file_le1.textChanged.connect(partial(self.__textchange))
+        self.ref_file_le1.textChanged.connect(partial(self.textchange))
         layout3.addWidget(self.ref_file_le1, 1, 0, 1, 1)
 
         self.ref_file_btn1 = QtWidgets.QPushButton("...", self.d)
         self.ref_file_btn1.setObjectName("2")
-        self.ref_file_btn1.clicked.connect(partial(self.__selectfile, self.ref_file_btn1.objectName()))
+        self.ref_file_btn1.clicked.connect(partial(self.selectfile, self.ref_file_btn1.objectName()))
         layout3.addWidget(self.ref_file_btn1, 1, 1, 1, 1)
 
         self.ref_file_le2 = QtWidgets.QLineEdit("", self.d)
         self.ref_file_le2.setDisabled(True)
-        self.ref_file_le2.textChanged.connect(partial(self.__textchange))
+        self.ref_file_le2.textChanged.connect(partial(self.textchange))
         layout3.addWidget(self.ref_file_le2, 2, 0, 1, 1)
 
         self.ref_file_btn2 = QtWidgets.QPushButton("...", self.d)
         self.ref_file_btn2.setObjectName("3")
         self.ref_file_btn2.setDisabled(True)
-        self.ref_file_btn2.clicked.connect(partial(self.__selectfile, self.ref_file_btn2.objectName()))
+        self.ref_file_btn2.clicked.connect(partial(self.selectfile, self.ref_file_btn2.objectName()))
         layout3.addWidget(self.ref_file_btn2, 2, 1, 1, 1)
 
         # Select columns
@@ -985,7 +985,7 @@ class OpenFile(QtWidgets.QDialog):
         self.ref_header_cb.setObjectName('2')
         self.ref_header_cb.setChecked(False if self.header_ref is None else True)
         self.ref_header_cb.setDisabled(True)
-        self.ref_header_cb.stateChanged.connect(partial(self.__statechange, self.ref_header_cb.objectName()))
+        self.ref_header_cb.stateChanged.connect(partial(self.statechange, self.ref_header_cb.objectName()))
         layout4.addWidget(self.ref_header_cb, 1, 0, 1, 2)
 
         ref_header_lbl = QtWidgets.QLabel("Row: ", self.d)
@@ -996,7 +996,7 @@ class OpenFile(QtWidgets.QDialog):
         self.ref_header_le.setMaxLength(2)
         self.ref_header_le.setText("1" if self.header_ref is None else str(self.header_ref))
         self.ref_header_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.ref_header_le.textChanged.connect(partial(self.__textchange))
+        self.ref_header_le.textChanged.connect(partial(self.textchange))
         layout4.addWidget(self.ref_header_le, 1, 3, 1, 1)
 
         ref_col_x_lbl = QtWidgets.QLabel("X-axis (L/R): ", self.d)
@@ -1006,7 +1006,7 @@ class OpenFile(QtWidgets.QDialog):
         self.ref_col_x_le.setDisabled(self.file_path_ref1 == "")
         self.ref_col_x_le.setMaxLength(2)
         self.ref_col_x_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.ref_col_x_le.textChanged.connect(partial(self.__textchange))
+        self.ref_col_x_le.textChanged.connect(partial(self.textchange))
         layout4.addWidget(self.ref_col_x_le, 2, 1, 1, 1)
 
         ref_col_y_lbl = QtWidgets.QLabel("Y-axis (F/B): ", self.d)
@@ -1016,7 +1016,7 @@ class OpenFile(QtWidgets.QDialog):
         self.ref_col_y_le.setDisabled(self.file_path_ref1 == "")
         self.ref_col_y_le.setMaxLength(2)
         self.ref_col_y_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.ref_col_y_le.textChanged.connect(partial(self.__textchange))
+        self.ref_col_y_le.textChanged.connect(partial(self.textchange))
         layout4.addWidget(self.ref_col_y_le, 2, 3, 1, 1)
 
         ref_col_z_lbl = QtWidgets.QLabel("Z-axis (U/D): ", self.d)
@@ -1026,14 +1026,14 @@ class OpenFile(QtWidgets.QDialog):
         self.ref_col_z_le.setDisabled(self.file_path_ref1 == "")
         self.ref_col_z_le.setMaxLength(2)
         self.ref_col_z_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.ref_col_z_le.textChanged.connect(partial(self.__textchange))
+        self.ref_col_z_le.textChanged.connect(partial(self.textchange))
         layout4.addWidget(self.ref_col_z_le, 2, 5, 1, 1)
 
         self.build_ref_cb = QtWidgets.QCheckBox("Build reference object? ", self.d)
         self.build_ref_cb.setDisabled(self.file_path_ref1 == "" or self.file_path_ref2 == "")
         self.build_ref_cb.setObjectName('3')
         self.build_ref_cb.setChecked(self.build_ref_obj)
-        self.build_ref_cb.stateChanged.connect(partial(self.__statechange, self.build_ref_cb.objectName()))
+        self.build_ref_cb.stateChanged.connect(partial(self.statechange, self.build_ref_cb.objectName()))
         layout5.addWidget(self.build_ref_cb, 0, 0, 1, 2)
 
         build_ref_lbl1 = QtWidgets.QLabel("Radius of top file's reference: ")
@@ -1071,7 +1071,7 @@ class OpenFile(QtWidgets.QDialog):
         self.smooth_cb = QtWidgets.QCheckBox("Smooth", self.d)
         self.smooth_cb.setObjectName('4')
         self.smooth_cb.setChecked(self.smooth)
-        self.smooth_cb.toggled.connect(partial(self.__statechange, self.smooth_cb.objectName()))
+        self.smooth_cb.toggled.connect(partial(self.statechange, self.smooth_cb.objectName()))
         layout6.addWidget(self.smooth_cb, 1, 0, 1, 4)
 
         smooth_order_lbl = QtWidgets.QLabel("Polynomial Order:", self.d)
@@ -1095,7 +1095,7 @@ class OpenFile(QtWidgets.QDialog):
         self.interpolate_cb = QtWidgets.QCheckBox("Interpolate", self.d)
         self.interpolate_cb.setObjectName('5')
         self.interpolate_cb.setChecked(self.interpolate)
-        self.interpolate_cb.toggled.connect(partial(self.__statechange, self.interpolate_cb.objectName()))
+        self.interpolate_cb.toggled.connect(partial(self.statechange, self.interpolate_cb.objectName()))
         layout6.addWidget(self.interpolate_cb, 3, 0, 1, 4)
 
         self.interpolate_le = QtWidgets.QLineEdit(str(self.interpolate_val), self.d)
@@ -1103,7 +1103,7 @@ class OpenFile(QtWidgets.QDialog):
         self.interpolate_le.setMaxLength(8)
         self.interpolate_le.setValidator(
             QtGui.QRegExpValidator(QtCore.QRegExp("(?=\.\d|\d)(?:\d+)?(?:\.?\d*)(?:[eE][+-]?\d+)?")))
-        self.interpolate_le.textChanged.connect(partial(self.__textchange))
+        self.interpolate_le.textChanged.connect(partial(self.textchange))
         layout6.addWidget(self.interpolate_le, 4, 0, 1, 1)
 
         interpolate_lbl = QtWidgets.QLabel("(Unit depends on the coordinates unit)", self.d)
@@ -1141,7 +1141,7 @@ class OpenFile(QtWidgets.QDialog):
         self.ok_btn = QtWidgets.QPushButton("OK", self.d)
         self.ok_btn.setDefault(True)
         self.ok_btn.setDisabled(True)
-        self.ok_btn.clicked.connect(partial(self.__ok))
+        self.ok_btn.clicked.connect(partial(self.ok))
         layout8.addWidget(self.ok_btn)
 
         # Cancel button
@@ -1151,7 +1151,7 @@ class OpenFile(QtWidgets.QDialog):
 
         self.d.exec_()
 
-    def __textchange(self):
+    def textchange(self):
         # Set OK button enable/disable
         if len(self.file_le.text()) > 0 and len(self.interpolate_le.text()) > 0 and len(self.header_le.text()) > 0 and \
                 len(self.col_x_le.text()) > 0 and len(self.col_y_le.text()) > 0 and len(self.col_z_le.text()) > 0 and \
@@ -1195,7 +1195,7 @@ class OpenFile(QtWidgets.QDialog):
             self.build_ref_radius1_sb.setDisabled(True)
             self.build_ref_radius2_sb.setDisabled(True)
 
-    def __statechange(self, cb_no):
+    def statechange(self, cb_no):
         if cb_no == '1':
             self.header_le.setEnabled(not self.header_le.isEnabled())
             if not self.header_cb.isChecked() and len(self.header_le.text()) == 0:
@@ -1215,7 +1215,7 @@ class OpenFile(QtWidgets.QDialog):
             if not self.interpolate_cb.isChecked() and len(self.interpolate_le.text()) == 0:
                 self.interpolate_le.setText(str(self.interpolate_val))
 
-    def __selectfile(self, le):
+    def selectfile(self, le):
         file_path = QtWidgets.QFileDialog.getOpenFileName(None, "Select File",
                                                           filter="CSV Files (*.csv)",
                                                           options=QtWidgets.QFileDialog.DontUseNativeDialog)
@@ -1232,7 +1232,7 @@ class OpenFile(QtWidgets.QDialog):
     # TODO: file-breaking prevention (equal rows, data type)
     # TODO: header check
     # TODO: column selection check
-    def __checkerror(self):
+    def checkerror(self):
         # Initialize error flag
         valid = True
 
@@ -1252,8 +1252,8 @@ class OpenFile(QtWidgets.QDialog):
 
         return valid, error_string
 
-    def __ok(self):
-        self.valid, error_string = self.__checkerror()
+    def ok(self):
+        self.valid, error_string = self.checkerror()
 
         if self.valid:
             # Set files
@@ -1495,7 +1495,7 @@ class LabelChange(QtWidgets.QDialog):
         # OK button and cancel button
         okbtn = QtWidgets.QPushButton("OK", self)
         okbtn.setDefault(True)
-        okbtn.clicked.connect(self.__change_label)
+        okbtn.clicked.connect(self.change_label)
         button_layout.addWidget(okbtn)
 
         cancelbtn = QtWidgets.QPushButton("Cancel", self)
@@ -1504,7 +1504,7 @@ class LabelChange(QtWidgets.QDialog):
 
         self.exec_()
 
-    def __change_label(self):
+    def change_label(self):
         # Change analysis level 1/2 hash according to the buttons selected
         if self.processing_level in [1, 2]:
             if self.processing_level == 1:
@@ -1640,7 +1640,7 @@ class Settings:
         # Create buttons to submit or cancel
         self.okbtn = QtWidgets.QPushButton("OK", self.d)
         self.okbtn.setDefault(True)
-        self.okbtn.clicked.connect(self.__change)
+        self.okbtn.clicked.connect(self.ok)
         layout.addWidget(self.okbtn, 2, 1, 1, 1)
 
         cancelbtn = QtWidgets.QPushButton("Cancel", self.d)
@@ -1649,7 +1649,7 @@ class Settings:
 
         self.d.exec_()
 
-    def __change(self):
+    def ok(self):
         if len(self.analysistab.xturn_le.text()) > 0 and len(self.analysistab.yturn_le.text()) > 0 and \
                 len(self.analysistab.zturn_le.text()) > 0 and len(self.analysistab.md_le.text()) > 0 and \
                 len(self.plottab.dpi_le.text()) > 0 and \
@@ -1913,7 +1913,7 @@ class Trajectory(QtWidgets.QDialog):
     def animate(self):
 
         # Frame update function
-        def __update_line(num, data, line):
+        def update_line(num, data, line):
             line_start = max((num - 100, 0))
             dot_start = max((num - 1, 0))
             scat._offsets3d = (data[0, dot_start:num], data[1, dot_start:num], data[2, dot_start:num])
@@ -1944,7 +1944,7 @@ class Trajectory(QtWidgets.QDialog):
         line, = self.ax.plot(data[0, 0:1], data[1, 0:1], data[2, 0:1])
         scat = self.ax.scatter(data[0, 0], data[1, 0], data[2, 0], c='#771F1F')
 
-        self.ani = FuncAnimation(self.fig, __update_line, len(self.x), fargs=(data, line), interval=0,
+        self.ani = FuncAnimation(self.fig, update_line, len(self.x), fargs=(data, line), interval=0,
                                  blit=False, repeat=True)
 
 

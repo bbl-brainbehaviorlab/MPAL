@@ -74,26 +74,26 @@ class Analysis:
         self.original_corr = np.asarray([x, y, z]).T
 
         # Preprocessing
-        self._preprocessing(x, y, z, smooth=smooth, smooth_order=smooth_order, smooth_window=smooth_window,
+        self.preprocessing(x, y, z, smooth=smooth, smooth_order=smooth_order, smooth_window=smooth_window,
                             interpolate=interpolate, interdist=interdist)
 
         # Get level-1 hash
-        self._lvl1hash()
+        self.lvl1hash()
 
         # Get level-2 hash
-        self._lvl2hash()
+        self.lvl2hash()
 
         # Get level-3 hash
-        self._lvl3hash()
+        self.lvl3hash()
 
         # Get post-interpolated to pre-interpolated conversion of data points
-        self._get_prepost_idx()
+        self.get_prepost_idx()
 
         # Create plot object
         self.plot = Plot(self.x, self.y, self.z, self.lvl2hashframe, self.lvl3hashframe)
 
     # Preprocessing
-    def _preprocessing(self, x, y, z, smooth=False, smooth_order=2, smooth_window=7,
+    def preprocessing(self, x, y, z, smooth=False, smooth_order=2, smooth_window=7,
                        interpolate=False, interdist=0.5):
         self.X, self.pre_post_idx = preprocess(x, y, z, smooth=smooth, smooth_order=smooth_order,
                                                smooth_window=smooth_window,
@@ -103,7 +103,7 @@ class Analysis:
         self.z = self.X[:, 2]
 
     # Get level-1 hash string and parameters of each node
-    def _lvl1hash(self):
+    def lvl1hash(self):
         # Initialize variables
         self.lvl1hash = [''] * 3
         self.parameters = np.empty((len(self.x), 9), dtype=object)
@@ -152,15 +152,15 @@ class Analysis:
 
         # Compute parameters
         for i in range(1, len(self.x) - 1):
-            self.parameters[i, 3] = self.__find_angle(self.X[i - 1], self.X[i], self.X[i + 1])
+            self.parameters[i, 3] = self.find_angle(self.X[i - 1], self.X[i], self.X[i + 1])
 
-        L, R, k = self.__curvature()
+        L, R, k = self.curvature()
         self.parameters[:, 4] = L
         self.parameters[:, 5] = R
         self.parameters[:, 6:] = k
 
     # Get level-2 hash strings and hash frame
-    def _lvl2hash(self):
+    def lvl2hash(self):
         # Initialize variables
         self.lvl2hash = [''] * 3
         self.lvl2hashframe = [0]
@@ -185,7 +185,7 @@ class Analysis:
         self.lvl2hash[2] += '/'
 
     # Get level-3 hash string and hash frame
-    def _lvl3hash(self):
+    def lvl3hash(self):
         # Initialize hash and hash frame variables
         self.lvl3hash = []
         self.lvl3hashframe = []
@@ -298,13 +298,13 @@ class Analysis:
         self.lvl3hash.append("END")
 
     # Get post-interpolated to pre-interpolated conversion of data points
-    def _get_prepost_idx(self):
+    def get_prepost_idx(self):
         self.idx = []
         for fr in self.lvl3hashframe:
             self.idx.append(np.where((self.pre_post_idx >= fr) == True)[0][0])
 
     @staticmethod
-    def __find_angle(p1, p2, p3):
+    def find_angle(p1, p2, p3):
         p1 = np.array(p1)
         p2 = np.array(p2)
         p3 = np.array(p3)
@@ -313,7 +313,7 @@ class Analysis:
             n2 = (p1 - p2) / norm(p1 - p2)
         return math.degrees(math.atan2(norm(np.cross(n1, n2)), np.dot(n1, n2)))
 
-    def __curvature(self):
+    def curvature(self):
 
         def circumcenter(A, B, C):
             D = np.cross(B - A, C - A)

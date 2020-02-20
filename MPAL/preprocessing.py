@@ -4,7 +4,7 @@ from scipy.signal import savgol_filter
 
 
 # Smooth curve using a Savitzky–Golay filter
-def _smooth(px, py, pz, smooth_order=2, smooth_window=7):
+def smoothing(px, py, pz, smooth_order=2, smooth_window=7):
     x = savgol_filter(px, smooth_window, smooth_order)
     y = savgol_filter(py, smooth_window, smooth_order)
     z = savgol_filter(pz, smooth_window, smooth_order)
@@ -14,7 +14,7 @@ def _smooth(px, py, pz, smooth_order=2, smooth_window=7):
 # Redistribute points evenly over a curve with arc-length of t cm
 # Original MATLAB code translated from https://www.mathworks.com/matlabcentral/fileexchange/34874-interparc
 # by John D'Errico
-def _interparc(t, px, py, pz):
+def interparc(t, px, py, pz):
     t = np.linspace(0, 1, t)
     nt = len(t)
     n = len(px)
@@ -47,7 +47,7 @@ def preprocess(x, y, z, smooth=False, smooth_order=2, smooth_window=7, interpola
     X = np.array([x, y, z]).T
 
     if smooth:
-        X = _smooth(X[:, 0], X[:, 1], X[:, 2], smooth_order=smooth_order, smooth_window=smooth_window)
+        X = smoothing(X[:, 0], X[:, 1], X[:, 2], smooth_order=smooth_order, smooth_window=smooth_window)
 
     if interpolate:
         idx = None
@@ -59,6 +59,6 @@ def preprocess(x, y, z, smooth=False, smooth_order=2, smooth_window=7, interpola
 
         t = round(dist / interdist)
 
-        X = _interparc(t, X[:, 0], X[:, 1], X[:, 2])[1:, :]
+        X = interparc(t, X[:, 0], X[:, 1], X[:, 2])[1:, :]
 
     return X, idx
