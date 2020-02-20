@@ -1958,5 +1958,6 @@ if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyle("Fusion")
     ui = App()
     sys.exit(app.exec_())
