@@ -380,18 +380,23 @@ class App(QtWidgets.QMainWindow):
         self.operating = False
 
     def __openfile(self):
+        # Set open file flag to false
         self.openfile.valid = False
+
+        # Show the open file dialog
         self.openfile.showUI()
 
+        # Check if the file is valid
         if self.openfile.valid:
+            # Reset variables
             self.processing_level = 1
             self.current_pos = 0
             self.scroll_txt_le.setText('0')
-
             self.zoom = 1.0
             self.zoom_lbl.setText(str(self.zoom))
             self.m.axes.dist = 10
 
+            # Run Analysis
             self.analysis = Analysis(self.openfile.file_path,
                                      self.openfile.col_x, self.openfile.col_y, self.openfile.col_z,
                                      self.settings.x_threshold, self.settings.y_threshold, self.settings.z_threshold,
@@ -400,6 +405,8 @@ class App(QtWidgets.QMainWindow):
                                      invert_z=self.openfile.invert_z,
                                      header=self.openfile.header, smooth=self.openfile.smooth,
                                      interpolate=self.openfile.interpolate, interdist=self.openfile.interpolate_val)
+
+            # Initialize plot
             self.m.initplot(self.analysis.plot.initplot_lvl1(), title='3D trajectory (Level 1)',
                             x_axis='X (Left/Right)', y_axis='Y (Forward/Backward)', z_axis='Z (Up/Down)',
                             invert_x=self.openfile.invert_x, invert_y=self.openfile.invert_y,
@@ -408,6 +415,7 @@ class App(QtWidgets.QMainWindow):
                                    self.analysis.lvl1hash[1][0] +
                                    self.analysis.lvl1hash[2][0])
 
+            # Enable GUI elements
             self.scroll_txt_le.setReadOnly(False)
             self.scroll_right_btn.setDisabled(False)
             self.change_btn.setDisabled(False)
@@ -459,7 +467,7 @@ class App(QtWidgets.QMainWindow):
                          'idx': self.analysis.idx})
             elif name[1] == "CSV Files (*.csv)":
                 # Ensure length of the three outputs are the same
-                # (IT SHOULD BE THE SAME, OTHERWISE SOMETHING WENT WRONG)
+                # (THEY SHOULD BE THE SAME, OTHERWISE SOMETHING WENT WRONG)
                 if len(self.analysis.lvl3hash) == len(self.analysis.lvl3hashframe) == len(self.analysis.idx):
                     out1 = np.array(list(map(str, self.analysis.lvl3hash)))
                     out2 = np.array(list(map(str, self.analysis.lvl3hashframe)))
@@ -1897,7 +1905,7 @@ class Trajectory(QtWidgets.QDialog):
 ########
 if __name__ == "__main__":
     global script_dir
-    script_dir = os.path.dirname(__file__)
+    script_dir = os.path.dirname(os.path.realpath(__file__))
 
     import sys
 
