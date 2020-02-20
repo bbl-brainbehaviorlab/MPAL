@@ -4,10 +4,10 @@ from scipy.signal import savgol_filter
 
 
 # Smooth curve using a Savitzky–Golay filter
-def _smooth(px, py, pz):
-    x = savgol_filter(px, 7, 2)
-    y = savgol_filter(py, 7, 2)
-    z = savgol_filter(pz, 7, 2)
+def _smooth(px, py, pz, smooth_order=2, smooth_window=7):
+    x = savgol_filter(px, smooth_window, smooth_order)
+    y = savgol_filter(py, smooth_window, smooth_order)
+    z = savgol_filter(pz, smooth_window, smooth_order)
     return np.array([x, y, z]).T
 
 
@@ -42,12 +42,12 @@ def _interparc(t, px, py, pz):
 # Main preprocessing function
 # Run smoothing and interpolating function depending on the boolean settings
 # Return idx as the lookup table of pre-processed and post-processed time information
-def preprocess(x, y, z, smooth=False, interpolate=False, interdist=0.5):
+def preprocess(x, y, z, smooth=False, smooth_order=2, smooth_window=7, interpolate=False, interdist=0.5):
     idx = np.arange(0, len(x))
     X = np.array([x, y, z]).T
 
     if smooth:
-        X = _smooth(X[:, 0], X[:, 1], X[:, 2])
+        X = _smooth(X[:, 0], X[:, 1], X[:, 2], smooth_order=smooth_order, smooth_window=smooth_window)
 
     if interpolate:
         idx = None

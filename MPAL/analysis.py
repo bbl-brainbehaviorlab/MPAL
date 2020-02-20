@@ -52,8 +52,8 @@ Parameters:  X global angle, Y global angle, Z global angle, relative angle, arc
 class Analysis:
 
     def __init__(self, file, col_x, col_y, col_z, x_threshold, y_threshold, z_threshold, main_direction_threshold,
-                 invert_x=False, invert_y=False, invert_z=False,
-                 header=None, smooth=False, interpolate=False, interdist=0.5):
+                 invert_x=False, invert_y=False, invert_z=False, header=None,
+                 smooth=False, smooth_order=2, smooth_window=7, interpolate=False, interdist=0.5):
         # Set object attributes
         self.x_threshold = x_threshold
         self.y_threshold = 90 - y_threshold
@@ -74,7 +74,8 @@ class Analysis:
         self.original_corr = np.asarray([x, y, z]).T
 
         # Preprocessing
-        self._preprocessing(x, y, z, smooth, interpolate, interdist)
+        self._preprocessing(x, y, z, smooth=smooth, smooth_order=smooth_order, smooth_window=smooth_window,
+                            interpolate=interpolate, interdist=interdist)
 
         # Get level-1 hash
         self._lvl1hash()
@@ -92,8 +93,11 @@ class Analysis:
         self.plot = Plot(self.x, self.y, self.z, self.lvl2hashframe, self.lvl3hashframe)
 
     # Preprocessing
-    def _preprocessing(self, x, y, z, smooth, interpolate, interdist):
-        self.X, self.pre_post_idx = preprocess(x, y, z, smooth=smooth, interpolate=interpolate, interdist=interdist)
+    def _preprocessing(self, x, y, z, smooth=False, smooth_order=2, smooth_window=7,
+                       interpolate=False, interdist=0.5):
+        self.X, self.pre_post_idx = preprocess(x, y, z, smooth=smooth, smooth_order=smooth_order,
+                                               smooth_window=smooth_window,
+                                               interpolate=interpolate, interdist=interdist)
         self.x = self.X[:, 0]
         self.y = self.X[:, 1]
         self.z = self.X[:, 2]

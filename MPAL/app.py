@@ -404,6 +404,7 @@ class App(QtWidgets.QMainWindow):
                                      invert_x=self.openfile.invert_x, invert_y=self.openfile.invert_y,
                                      invert_z=self.openfile.invert_z,
                                      header=self.openfile.header, smooth=self.openfile.smooth,
+                                     smooth_order=self.openfile.smooth_order, smooth_window=self.openfile.smooth_window,
                                      interpolate=self.openfile.interpolate, interdist=self.openfile.interpolate_val)
 
             # Initialize plot
@@ -1071,33 +1072,31 @@ class OpenFile(QtWidgets.QDialog):
         self.smooth_cb.setObjectName('4')
         self.smooth_cb.setChecked(self.smooth)
         self.smooth_cb.toggled.connect(partial(self.__statechange, self.smooth_cb.objectName()))
-        layout6.addWidget(self.smooth_cb, 1, 0, 1, 1)
+        layout6.addWidget(self.smooth_cb, 1, 0, 1, 4)
 
         smooth_order_lbl = QtWidgets.QLabel("Polynomial Order:", self.d)
         layout6.addWidget(smooth_order_lbl, 2, 0, 1, 1)
 
-        self.smooth_order_le = QtWidgets.QLineEdit(str(self.smooth_order), self.d)
-        self.smooth_order_le.setDisabled(not self.smooth)
-        self.smooth_order_le.setMaxLength(2)
-        self.smooth_order_le.setValidator(QtGui.QIntValidator())
-        self.smooth_order_le.textChanged.connect(partial(self.__textchange))
-        layout6.addWidget(self.smooth_order_le, 2, 1, 1, 1)
+        self.smooth_order_sb = QtWidgets.QSpinBox(self.d)
+        self.smooth_order_sb.setValue(self.smooth_order)
+        self.smooth_order_sb.setDisabled(not self.smooth)
+        self.smooth_order_sb.setRange(1, 99)
+        layout6.addWidget(self.smooth_order_sb, 2, 1, 1, 1)
 
         smooth_window_lbl = QtWidgets.QLabel("Window Length:", self.d)
         layout6.addWidget(smooth_window_lbl, 2, 2, 1, 1)
 
-        self.smooth_window_le = QtWidgets.QLineEdit(str(self.smooth_window), self.d)
-        self.smooth_window_le.setDisabled(not self.smooth)
-        self.smooth_window_le.setMaxLength(8)
-        self.smooth_window_le.setValidator(QtGui.QIntValidator())
-        self.smooth_window_le.textChanged.connect(partial(self.__textchange))
-        layout6.addWidget(self.smooth_window_le, 2, 3, 1, 1)
+        self.smooth_window_sb = QtWidgets.QSpinBox(self.d)
+        self.smooth_window_sb.setValue(self.smooth_window)
+        self.smooth_window_sb.setDisabled(not self.smooth)
+        self.smooth_window_sb.setRange(1, 99999)
+        layout6.addWidget(self.smooth_window_sb, 2, 3, 1, 1)
 
         self.interpolate_cb = QtWidgets.QCheckBox("Interpolate", self.d)
         self.interpolate_cb.setObjectName('5')
         self.interpolate_cb.setChecked(self.interpolate)
         self.interpolate_cb.toggled.connect(partial(self.__statechange, self.interpolate_cb.objectName()))
-        layout6.addWidget(self.interpolate_cb, 3, 0, 1, 1)
+        layout6.addWidget(self.interpolate_cb, 3, 0, 1, 4)
 
         self.interpolate_le = QtWidgets.QLineEdit(str(self.interpolate_val), self.d)
         self.interpolate_le.setDisabled(not self.interpolate)
@@ -1154,11 +1153,8 @@ class OpenFile(QtWidgets.QDialog):
 
     def __textchange(self):
         # Set OK button enable/disable
-        if len(self.file_le.text()) > 0 and len(self.smooth_order_le.text()) > 0 and \
-                len(self.smooth_window_le.text()) > 0 and len(self.interpolate_le.text()) > 0 and \
-                len(self.header_le.text()) > 0 and \
+        if len(self.file_le.text()) > 0 and len(self.interpolate_le.text()) > 0 and len(self.header_le.text()) > 0 and \
                 len(self.col_x_le.text()) > 0 and len(self.col_y_le.text()) > 0 and len(self.col_z_le.text()) > 0 and \
-                self.smooth_order_le.text() != '0' and self.smooth_window_le.text() != '0' and \
                 self.interpolate_le.text() != '0' and self.interpolate_le.text()[-1] != ".":
             if len(self.ref_file_le1.text()) > 0:
                 if len(self.ref_header_le.text()) > 0 and len(self.ref_col_x_le.text()) > 0 and \
@@ -1212,13 +1208,8 @@ class OpenFile(QtWidgets.QDialog):
             self.build_ref_radius1_sb.setEnabled(self.build_ref_cb.isChecked())
             self.build_ref_radius2_sb.setEnabled(self.build_ref_cb.isChecked())
         elif cb_no == '4':
-            self.smooth_order_le.setEnabled(not self.smooth_order_le.isEnabled())
-            self.smooth_window_le.setEnabled(not self.smooth_window_le.isEnabled())
-            if not self.smooth_cb.isChecked():
-                if len(self.smooth_order_le.text()) == 0:
-                    self.smooth_order_le.setText(str(self.smooth_order))
-                if len(self.smooth_window_le.text()) == 0:
-                    self.smooth_window_le.setText(str(self.smooth_window))
+            self.smooth_order_sb.setEnabled(not self.smooth_order_sb.isEnabled())
+            self.smooth_window_sb.setEnabled(not self.smooth_window_sb.isEnabled())
         elif cb_no == '5':
             self.interpolate_le.setEnabled(not self.interpolate_le.isEnabled())
             if not self.interpolate_cb.isChecked() and len(self.interpolate_le.text()) == 0:
@@ -1242,11 +1233,27 @@ class OpenFile(QtWidgets.QDialog):
     # TODO: header check
     # TODO: column selection check
     def __checkerror(self):
-        return True
+        # Initialize error flag
+        valid = True
+
+        # Initialize error message
+        error_string = ""
+
+        # Check if smoothing polynomial order is smaller than window length
+        if int(self.smooth_order_sb.value()) >= int(self.smooth_window_sb.value()):
+            valid = False
+            error_string += "Smoothing polynomial order must be smaller than window length\n"
+
+        # Check if smoothing window length is an odd number
+        if int(self.smooth_window_sb.value()) % 2 == 0:
+            valid = False
+            error_string += "Smoothing window length must be an odd number\n"
+
+        return valid, error_string
 
     def __ok(self):
         if self.file_le.text() != '':
-            self.valid = self.__checkerror()
+            self.valid, error_string = self.__checkerror()
 
         if self.valid:
             # Set files
@@ -1274,8 +1281,12 @@ class OpenFile(QtWidgets.QDialog):
             # Check if the smoothing option is checked
             if self.smooth_cb.isChecked():
                 self.smooth = True
+                self.smooth_order = int(self.smooth_order_sb.value())
+                self.smooth_window = int(self.smooth_window_sb.value())
             else:
                 self.smooth = False
+                self.smooth_order = 2
+                self.smooth_window = 7
 
             # Check if the interpolating option is checked
             if self.interpolate_cb.isChecked():
