@@ -846,6 +846,8 @@ class OpenFile(QtWidgets.QDialog):
         self.build_ref_radius1 = 0.00
         self.build_ref_radius2 = 0.00
         self.smooth = False
+        self.smooth_order = 2
+        self.smooth_window = 7
         self.interpolate = False
         self.interpolate_val = 0.5
         self.invert_x = False
@@ -856,7 +858,7 @@ class OpenFile(QtWidgets.QDialog):
         # Set up dialog UI
         self.d = QtWidgets.QDialog()
         self.d.setWindowTitle("Open File")
-        self.d.setGeometry(50, 50, 400, 200)
+        self.d.setGeometry(50, 50, 400, 250)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHeightForWidth(self.d.sizePolicy().hasHeightForWidth())
         self.d.setSizePolicy(sizePolicy)
@@ -1066,31 +1068,53 @@ class OpenFile(QtWidgets.QDialog):
         layout6.addWidget(pp_lbl, 0, 0, 1, 4)
 
         self.smooth_cb = QtWidgets.QCheckBox("Smooth", self.d)
+        self.smooth_cb.setObjectName('4')
         self.smooth_cb.setChecked(self.smooth)
+        self.smooth_cb.toggled.connect(partial(self.__statechange, self.smooth_cb.objectName()))
         layout6.addWidget(self.smooth_cb, 1, 0, 1, 1)
 
+        smooth_order_lbl = QtWidgets.QLabel("Polynomial Order:", self.d)
+        layout6.addWidget(smooth_order_lbl, 2, 0, 1, 1)
+
+        self.smooth_order_le = QtWidgets.QLineEdit(str(self.smooth_order), self.d)
+        self.smooth_order_le.setDisabled(not self.smooth)
+        self.smooth_order_le.setMaxLength(2)
+        self.smooth_order_le.setValidator(QtGui.QIntValidator())
+        self.smooth_order_le.textChanged.connect(partial(self.__textchange))
+        layout6.addWidget(self.smooth_order_le, 2, 1, 1, 1)
+
+        smooth_window_lbl = QtWidgets.QLabel("Window Length:", self.d)
+        layout6.addWidget(smooth_window_lbl, 2, 2, 1, 1)
+
+        self.smooth_window_le = QtWidgets.QLineEdit(str(self.smooth_window), self.d)
+        self.smooth_window_le.setDisabled(not self.smooth)
+        self.smooth_window_le.setMaxLength(8)
+        self.smooth_window_le.setValidator(QtGui.QIntValidator())
+        self.smooth_window_le.textChanged.connect(partial(self.__textchange))
+        layout6.addWidget(self.smooth_window_le, 2, 3, 1, 1)
+
         self.interpolate_cb = QtWidgets.QCheckBox("Interpolate", self.d)
-        self.interpolate_cb.setObjectName('4')
+        self.interpolate_cb.setObjectName('5')
         self.interpolate_cb.setChecked(self.interpolate)
         self.interpolate_cb.toggled.connect(partial(self.__statechange, self.interpolate_cb.objectName()))
-        layout6.addWidget(self.interpolate_cb, 1, 1, 1, 1)
+        layout6.addWidget(self.interpolate_cb, 3, 0, 1, 1)
 
         self.interpolate_le = QtWidgets.QLineEdit(str(self.interpolate_val), self.d)
         self.interpolate_le.setDisabled(not self.interpolate)
-        self.interpolate_le.setMaxLength(6)
+        self.interpolate_le.setMaxLength(8)
         self.interpolate_le.setValidator(
             QtGui.QRegExpValidator(QtCore.QRegExp("(?=\.\d|\d)(?:\d+)?(?:\.?\d*)(?:[eE][+-]?\d+)?")))
         self.interpolate_le.textChanged.connect(partial(self.__textchange))
-        layout6.addWidget(self.interpolate_le, 1, 2, 1, 1)
+        layout6.addWidget(self.interpolate_le, 4, 0, 1, 1)
 
-        interpolate_lbl = QtWidgets.QLabel("(default: 0.5)", self.d)
-        layout6.addWidget(interpolate_lbl, 1, 3, 1, 1)
+        interpolate_lbl = QtWidgets.QLabel("(Unit depends on the coordinates unit)", self.d)
+        layout6.addWidget(interpolate_lbl, 4, 1, 1, 3)
 
         # Separation line
         line3 = QtWidgets.QFrame(self.d)
         line3.setFrameShape(QtWidgets.QFrame.HLine)
         line3.setFrameShadow(QtWidgets.QFrame.Sunken)
-        layout6.addWidget(line3, 2, 0, 1, 4)
+        layout6.addWidget(line3, 5, 0, 1, 4)
 
         # Invert axes options
         invert_lbl = QtWidgets.QLabel("Invert Axis Options:", self.d)
@@ -1130,8 +1154,11 @@ class OpenFile(QtWidgets.QDialog):
 
     def __textchange(self):
         # Set OK button enable/disable
-        if len(self.file_le.text()) > 0 and len(self.interpolate_le.text()) > 0 and len(self.header_le.text()) > 0 and \
+        if len(self.file_le.text()) > 0 and len(self.smooth_order_le.text()) > 0 and \
+                len(self.smooth_window_le.text()) > 0 and len(self.interpolate_le.text()) > 0 and \
+                len(self.header_le.text()) > 0 and \
                 len(self.col_x_le.text()) > 0 and len(self.col_y_le.text()) > 0 and len(self.col_z_le.text()) > 0 and \
+                self.smooth_order_le.text() != '0' and self.smooth_window_le.text() != '0' and \
                 self.interpolate_le.text() != '0' and self.interpolate_le.text()[-1] != ".":
             if len(self.ref_file_le1.text()) > 0:
                 if len(self.ref_header_le.text()) > 0 and len(self.ref_col_x_le.text()) > 0 and \
@@ -1185,9 +1212,17 @@ class OpenFile(QtWidgets.QDialog):
             self.build_ref_radius1_sb.setEnabled(self.build_ref_cb.isChecked())
             self.build_ref_radius2_sb.setEnabled(self.build_ref_cb.isChecked())
         elif cb_no == '4':
+            self.smooth_order_le.setEnabled(not self.smooth_order_le.isEnabled())
+            self.smooth_window_le.setEnabled(not self.smooth_window_le.isEnabled())
+            if not self.smooth_cb.isChecked():
+                if len(self.smooth_order_le.text()) == 0:
+                    self.smooth_order_le.setText(str(self.smooth_order))
+                if len(self.smooth_window_le.text()) == 0:
+                    self.smooth_window_le.setText(str(self.smooth_window))
+        elif cb_no == '5':
             self.interpolate_le.setEnabled(not self.interpolate_le.isEnabled())
             if not self.interpolate_cb.isChecked() and len(self.interpolate_le.text()) == 0:
-                self.interpolate_le.setText("0.5")
+                self.interpolate_le.setText(str(self.interpolate_val))
 
     def __selectfile(self, le):
         file_path = QtWidgets.QFileDialog.getOpenFileName(None, "Select File",
@@ -1206,12 +1241,12 @@ class OpenFile(QtWidgets.QDialog):
     # TODO: file-breaking prevention (equal rows, data type)
     # TODO: header check
     # TODO: column selection check
-    def __checkfile(self):
+    def __checkerror(self):
         return True
 
     def __ok(self):
         if self.file_le.text() != '':
-            self.valid = self.__checkfile()
+            self.valid = self.__checkerror()
 
         if self.valid:
             # Set files
