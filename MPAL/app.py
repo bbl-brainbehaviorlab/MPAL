@@ -1239,21 +1239,21 @@ class OpenFile(QtWidgets.QDialog):
         # Initialize error message
         error_string = ""
 
-        # Check if smoothing polynomial order is smaller than window length
-        if int(self.smooth_order_sb.value()) >= int(self.smooth_window_sb.value()):
-            valid = False
-            error_string += "Smoothing polynomial order must be smaller than window length\n"
+        if self.smooth_cb.isChecked():
+            # Check if smoothing polynomial order is smaller than window length
+            if int(self.smooth_order_sb.value()) >= int(self.smooth_window_sb.value()):
+                valid = False
+                error_string += "- Smoothing polynomial order must be smaller than window length <br>"
 
-        # Check if smoothing window length is an odd number
-        if int(self.smooth_window_sb.value()) % 2 == 0:
-            valid = False
-            error_string += "Smoothing window length must be an odd number\n"
+            # Check if smoothing window length is an odd number
+            if int(self.smooth_window_sb.value()) % 2 == 0:
+                valid = False
+                error_string += "- Smoothing window length must be an odd number <br>"
 
         return valid, error_string
 
     def __ok(self):
-        if self.file_le.text() != '':
-            self.valid, error_string = self.__checkerror()
+        self.valid, error_string = self.__checkerror()
 
         if self.valid:
             # Set files
@@ -1304,8 +1304,10 @@ class OpenFile(QtWidgets.QDialog):
             # Close dialog
             self.d.close()
         else:
-            QtWidgets.QMessageBox.warning(self.d, "Error", "The selected file is invalid.",
-                                          QtWidgets.QMessageBox.Ok)
+            error_msg = QtWidgets.QErrorMessage(self.d)
+            error_msg.setWindowModality(QtCore.Qt.WindowModal)
+            error_msg.setWindowTitle("Error")
+            error_msg.showMessage(error_string)
 
 
 #######################
