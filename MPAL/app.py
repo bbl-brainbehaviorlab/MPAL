@@ -20,7 +20,6 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import numpy as np
 from scipy.io import savemat
-import pandas as pd
 
 from analysis import *
 
@@ -236,11 +235,11 @@ class App(QtWidgets.QMainWindow):
         openButton.triggered.connect(self.fileopen)
         file_menu.addAction(openButton)
 
-        self.exportcsvButton = QtWidgets.QAction('&Export Coordinates', self)
-        self.exportcsvButton.setStatusTip("Export trajectory coordinates to CSV")
-        self.exportcsvButton.setDisabled(True)
-        self.exportcsvButton.triggered.connect(self.exportcsv)
-        file_menu.addAction(self.exportcsvButton)
+        self.exportcoordsButton = QtWidgets.QAction('&Export Coordinates', self)
+        self.exportcoordsButton.setStatusTip("Export trajectory coordinates to CSV")
+        self.exportcoordsButton.setDisabled(True)
+        self.exportcoordsButton.triggered.connect(self.export_coords)
+        file_menu.addAction(self.exportcoordsButton)
 
         self.saveButton = QtWidgets.QAction('&Save Results...', self)
         self.saveButton.setShortcut('Ctrl+S')
@@ -253,7 +252,7 @@ class App(QtWidgets.QMainWindow):
         self.saveTrajectoryButton = QtWidgets.QAction('&Save Trajectory Animation', self)
         self.saveTrajectoryButton.setStatusTip("Save trajectory animation")
         self.saveTrajectoryButton.setDisabled(True)
-        #self.saveTrajectoryButton.triggered.connect(self.savetrajectory)
+        # self.saveTrajectoryButton.triggered.connect(self.savetrajectory)
         file_menu.addAction(self.saveTrajectoryButton)
 
         file_menu.addSeparator()
@@ -367,7 +366,7 @@ class App(QtWidgets.QMainWindow):
         self.scroll_right_btn.setDisabled(True)
         self.change_btn.setDisabled(True)
         self.saveButton.setDisabled(True)
-        self.exportcsvButton.setDisabled(True)
+        self.exportcoordsButton.setDisabled(True)
         self.saveTrajectoryButton.setDisabled(True)
         self.jumpstartButton.setDisabled(True)
         self.jumpendButton.setDisabled(True)
@@ -421,7 +420,7 @@ class App(QtWidgets.QMainWindow):
             self.scroll_right_btn.setDisabled(False)
             self.change_btn.setDisabled(False)
             self.saveButton.setDisabled(False)
-            self.exportcsvButton.setDisabled(False)
+            self.exportcoordsButton.setDisabled(False)
             self.saveTrajectoryButton.setDisabled(False)
             self.jumpstartButton.setDisabled(False)
             self.jumpendButton.setDisabled(False)
@@ -499,7 +498,7 @@ class App(QtWidgets.QMainWindow):
                     wr.writerow(["number", "label_of_segment", "onset_index", "onset_index_pre_interpolation"])
                     wr.writerows(out)
 
-    def exportcsv(self):
+    def export_coords(self):
         name = QtWidgets.QFileDialog.getSaveFileName(self, "Export coordinates",
                                                      self.openfile.file_path[:-4] + "_COORDS",
                                                      "CSV Files (*.csv)",
@@ -628,7 +627,8 @@ class App(QtWidgets.QMainWindow):
                                     format(appname, version, release_date, update_date))
 
     # TODO: Beautify the dialog
-    def howtouse(self):
+    @staticmethod
+    def howtouse():
         # Create text
         text = "Instructions\n" \
                "---------------------------------------------------------------------------------------------\n" \
@@ -826,7 +826,7 @@ class App(QtWidgets.QMainWindow):
 ####################
 # Open file dialog #
 ####################
-class OpenFile(QtWidgets.QDialog):
+class OpenFile:
 
     def __init__(self):
 
@@ -844,8 +844,8 @@ class OpenFile(QtWidgets.QDialog):
         self.col_y_ref = 2
         self.col_z_ref = 3
         self.build_ref_obj = False
-        self.build_ref_radius1 = 0.00
-        self.build_ref_radius2 = 0.00
+        self.build_ref_radius1 = 0.001
+        self.build_ref_radius2 = 0.001
         self.smooth = False
         self.smooth_order = 2
         self.smooth_window = 7
@@ -860,7 +860,7 @@ class OpenFile(QtWidgets.QDialog):
         self.d = QtWidgets.QDialog()
         self.d.setWindowTitle("Open File")
         self.d.setGeometry(50, 50, 400, 250)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHeightForWidth(self.d.sizePolicy().hasHeightForWidth())
         self.d.setSizePolicy(sizePolicy)
         self.d.setWindowModality(QtCore.Qt.ApplicationModal)
@@ -870,364 +870,44 @@ class OpenFile(QtWidgets.QDialog):
 
         # Create layouts inside main layout
         layout1 = QtWidgets.QGridLayout()
-        layout2 = QtWidgets.QGridLayout()
-        layout3 = QtWidgets.QGridLayout()
-        layout4 = QtWidgets.QGridLayout()
-        layout5 = QtWidgets.QGridLayout()
-        layout6 = QtWidgets.QGridLayout()
-        layout7 = QtWidgets.QGridLayout()
-        layout8 = QtWidgets.QHBoxLayout()
         main_layout.addLayout(layout1)
-        main_layout.addLayout(layout2)
-        main_layout.addLayout(layout3)
-        main_layout.addLayout(layout4)
-        main_layout.addLayout(layout5)
-        main_layout.addLayout(layout6)
-        main_layout.addLayout(layout7)
-        main_layout.addLayout(layout8)
 
-        # Select files
-        file_lbl = QtWidgets.QLabel("Select file to be opened:", self.d)
-        layout1.addWidget(file_lbl, 0, 0, 1, 2)
+        # Initialize tabs
+        self.fileinfo_tab = FileInfoWidget(self.header, self.col_x, self.col_y, self.col_z,
+                                           self.invert_x, self.invert_y, self.invert_z)
+        self.reference_tab = ReferenceWidget(self.header_ref, self.col_x_ref, self.col_y_ref, self.col_z_ref,
+                                             self.build_ref_obj, self.build_ref_radius1, self.build_ref_radius2)
+        self.preprocessing_tab = PreprocessingWidget(self.smooth, self.smooth_order, self.smooth_window,
+                                                     self.interpolate, self.interpolate_val)
 
-        self.file_le = QtWidgets.QLineEdit("", self.d)
-        self.file_le.textChanged.connect(partial(self.textchange))
-        layout1.addWidget(self.file_le, 1, 0, 1, 1)
+        # Tab widget
+        tab_widget = QtWidgets.QTabWidget()
+        tab_widget.addTab(self.fileinfo_tab, "File")
+        tab_widget.addTab(self.reference_tab, "References (Optional)")
+        tab_widget.addTab(self.preprocessing_tab, "Preprocessing")
+        layout1.addWidget(tab_widget, 0, 0, 1, 2)
 
-        file_btn = QtWidgets.QPushButton("...", self.d)
-        file_btn.setObjectName("1")
-        file_btn.clicked.connect(partial(self.selectfile, file_btn.objectName()))
-        layout1.addWidget(file_btn, 1, 1, 1, 1)
-
-        # Select columns
-        fo_lbl = QtWidgets.QLabel("File Options: (Index starts at 1)", self.d)
-        layout2.addWidget(fo_lbl, 0, 0, 1, 6)
-
-        self.header_cb = QtWidgets.QCheckBox("Header? ", self.d)
-        self.header_cb.setObjectName('1')
-        self.header_cb.setChecked(False if self.header is None else True)
-        self.header_cb.stateChanged.connect(partial(self.statechange, self.header_cb.objectName()))
-        layout2.addWidget(self.header_cb, 1, 0, 1, 2)
-
-        header_lbl = QtWidgets.QLabel("Row: ", self.d)
-        layout2.addWidget(header_lbl, 1, 2, 1, 1)
-
-        self.header_le = QtWidgets.QLineEdit("1", self.d)
-        self.header_le.setDisabled(not self.header_cb.isChecked())
-        self.header_le.setMaxLength(2)
-        self.header_le.setText("1" if self.header is None else str(self.header))
-        self.header_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.header_le.textChanged.connect(partial(self.textchange))
-        layout2.addWidget(self.header_le, 1, 3, 1, 1)
-
-        col_x_lbl = QtWidgets.QLabel("X-axis (L/R): ", self.d)
-        layout2.addWidget(col_x_lbl, 2, 0, 1, 1)
-
-        self.col_x_le = QtWidgets.QLineEdit(str(self.col_x), self.d)
-        self.col_x_le.setMaxLength(2)
-        self.col_x_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.col_x_le.textChanged.connect(partial(self.textchange))
-        layout2.addWidget(self.col_x_le, 2, 1, 1, 1)
-
-        col_y_lbl = QtWidgets.QLabel("Y-axis (F/B): ", self.d)
-        layout2.addWidget(col_y_lbl, 2, 2, 1, 1)
-
-        self.col_y_le = QtWidgets.QLineEdit(str(self.col_y), self.d)
-        self.col_y_le.setMaxLength(2)
-        self.col_y_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.col_y_le.textChanged.connect(partial(self.textchange))
-        layout2.addWidget(self.col_y_le, 2, 3, 1, 1)
-
-        col_z_lbl = QtWidgets.QLabel("Z-axis (U/D): ", self.d)
-        layout2.addWidget(col_z_lbl, 2, 4, 1, 1)
-
-        self.col_z_le = QtWidgets.QLineEdit(str(self.col_z), self.d)
-        self.col_z_le.setMaxLength(2)
-        self.col_z_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.col_z_le.textChanged.connect(partial(self.textchange))
-        layout2.addWidget(self.col_z_le, 2, 5, 1, 1)
-
-        # Separation line
-        line1 = QtWidgets.QFrame(self.d)
-        line1.setFrameShape(QtWidgets.QFrame.HLine)
-        line1.setFrameShadow(QtWidgets.QFrame.Sunken)
-        layout2.addWidget(line1, 3, 0, 1, 6)
-
-        # Optional file
-        ref_file_lbl = QtWidgets.QLabel("Select reference sensor file(s) to be opened (Optional):", self.d)
-        layout3.addWidget(ref_file_lbl, 0, 0, 1, 2)
-
-        self.ref_file_le1 = QtWidgets.QLineEdit("", self.d)
-        self.ref_file_le1.textChanged.connect(partial(self.textchange))
-        layout3.addWidget(self.ref_file_le1, 1, 0, 1, 1)
-
-        self.ref_file_btn1 = QtWidgets.QPushButton("...", self.d)
-        self.ref_file_btn1.setObjectName("2")
-        self.ref_file_btn1.clicked.connect(partial(self.selectfile, self.ref_file_btn1.objectName()))
-        layout3.addWidget(self.ref_file_btn1, 1, 1, 1, 1)
-
-        self.ref_file_le2 = QtWidgets.QLineEdit("", self.d)
-        self.ref_file_le2.setDisabled(True)
-        self.ref_file_le2.textChanged.connect(partial(self.textchange))
-        layout3.addWidget(self.ref_file_le2, 2, 0, 1, 1)
-
-        self.ref_file_btn2 = QtWidgets.QPushButton("...", self.d)
-        self.ref_file_btn2.setObjectName("3")
-        self.ref_file_btn2.setDisabled(True)
-        self.ref_file_btn2.clicked.connect(partial(self.selectfile, self.ref_file_btn2.objectName()))
-        layout3.addWidget(self.ref_file_btn2, 2, 1, 1, 1)
-
-        # Select columns
-        ref_fo_lbl = QtWidgets.QLabel("File Options: (Index starts at 1)", self.d)
-        layout4.addWidget(ref_fo_lbl, 0, 0, 1, 6)
-
-        self.ref_header_cb = QtWidgets.QCheckBox("Header? ", self.d)
-        self.ref_header_cb.setObjectName('2')
-        self.ref_header_cb.setChecked(False if self.header_ref is None else True)
-        self.ref_header_cb.setDisabled(True)
-        self.ref_header_cb.stateChanged.connect(partial(self.statechange, self.ref_header_cb.objectName()))
-        layout4.addWidget(self.ref_header_cb, 1, 0, 1, 2)
-
-        ref_header_lbl = QtWidgets.QLabel("Row: ", self.d)
-        layout4.addWidget(ref_header_lbl, 1, 2, 1, 1)
-
-        self.ref_header_le = QtWidgets.QLineEdit("1", self.d)
-        self.ref_header_le.setDisabled(self.file_path_ref1 == "" or not self.ref_header_cb.isChecked())
-        self.ref_header_le.setMaxLength(2)
-        self.ref_header_le.setText("1" if self.header_ref is None else str(self.header_ref))
-        self.ref_header_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.ref_header_le.textChanged.connect(partial(self.textchange))
-        layout4.addWidget(self.ref_header_le, 1, 3, 1, 1)
-
-        ref_col_x_lbl = QtWidgets.QLabel("X-axis (L/R): ", self.d)
-        layout4.addWidget(ref_col_x_lbl, 2, 0, 1, 1)
-
-        self.ref_col_x_le = QtWidgets.QLineEdit(str(self.col_x_ref), self.d)
-        self.ref_col_x_le.setDisabled(self.file_path_ref1 == "")
-        self.ref_col_x_le.setMaxLength(2)
-        self.ref_col_x_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.ref_col_x_le.textChanged.connect(partial(self.textchange))
-        layout4.addWidget(self.ref_col_x_le, 2, 1, 1, 1)
-
-        ref_col_y_lbl = QtWidgets.QLabel("Y-axis (F/B): ", self.d)
-        layout4.addWidget(ref_col_y_lbl, 2, 2, 1, 1)
-
-        self.ref_col_y_le = QtWidgets.QLineEdit(str(self.col_y_ref), self.d)
-        self.ref_col_y_le.setDisabled(self.file_path_ref1 == "")
-        self.ref_col_y_le.setMaxLength(2)
-        self.ref_col_y_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.ref_col_y_le.textChanged.connect(partial(self.textchange))
-        layout4.addWidget(self.ref_col_y_le, 2, 3, 1, 1)
-
-        ref_col_z_lbl = QtWidgets.QLabel("Z-axis (U/D): ", self.d)
-        layout4.addWidget(ref_col_z_lbl, 2, 4, 1, 1)
-
-        self.ref_col_z_le = QtWidgets.QLineEdit(str(self.col_z_ref), self.d)
-        self.ref_col_z_le.setDisabled(self.file_path_ref1 == "")
-        self.ref_col_z_le.setMaxLength(2)
-        self.ref_col_z_le.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp("([1-9]|[1-8][0-9]|9[0-9])")))
-        self.ref_col_z_le.textChanged.connect(partial(self.textchange))
-        layout4.addWidget(self.ref_col_z_le, 2, 5, 1, 1)
-
-        self.build_ref_cb = QtWidgets.QCheckBox("Build reference object? ", self.d)
-        self.build_ref_cb.setDisabled(self.file_path_ref1 == "" or self.file_path_ref2 == "")
-        self.build_ref_cb.setObjectName('3')
-        self.build_ref_cb.setChecked(self.build_ref_obj)
-        self.build_ref_cb.stateChanged.connect(partial(self.statechange, self.build_ref_cb.objectName()))
-        layout5.addWidget(self.build_ref_cb, 0, 0, 1, 2)
-
-        build_ref_lbl1 = QtWidgets.QLabel("Radius of top file's reference: ")
-        layout5.addWidget(build_ref_lbl1, 1, 0, 1, 1)
-
-        self.build_ref_radius1_sb = QtWidgets.QDoubleSpinBox(self.d)
-        self.build_ref_radius1_sb.setDisabled(
-            self.file_path_ref1 == "" or self.file_path_ref2 == "" or not self.build_ref_cb.isChecked())
-        self.build_ref_radius1_sb.setValue(self.build_ref_radius1)
-        self.build_ref_radius1_sb.setDecimals(2)
-        self.build_ref_radius1_sb.setSingleStep(0.01)
-        layout5.addWidget(self.build_ref_radius1_sb, 1, 1, 1, 1)
-
-        build_ref_lbl2 = QtWidgets.QLabel("Radius of bottom file's reference: ")
-        layout5.addWidget(build_ref_lbl2, 2, 0, 1, 1)
-
-        self.build_ref_radius2_sb = QtWidgets.QDoubleSpinBox(self.d)
-        self.build_ref_radius2_sb.setDisabled(
-            self.file_path_ref1 == "" or self.file_path_ref2 == "" or not self.build_ref_cb.isChecked())
-        self.build_ref_radius2_sb.setValue(self.build_ref_radius2)
-        self.build_ref_radius2_sb.setDecimals(2)
-        self.build_ref_radius2_sb.setSingleStep(0.01)
-        layout5.addWidget(self.build_ref_radius2_sb, 2, 1, 1, 1)
-
-        # Separation line
-        line2 = QtWidgets.QFrame(self.d)
-        line2.setFrameShape(QtWidgets.QFrame.HLine)
-        line2.setFrameShadow(QtWidgets.QFrame.Sunken)
-        layout5.addWidget(line2, 3, 0, 1, 2)
-
-        # Preprocessing options
-        pp_lbl = QtWidgets.QLabel("Preprocessing Options:", self.d)
-        layout6.addWidget(pp_lbl, 0, 0, 1, 4)
-
-        self.smooth_cb = QtWidgets.QCheckBox("Smooth", self.d)
-        self.smooth_cb.setObjectName('4')
-        self.smooth_cb.setChecked(self.smooth)
-        self.smooth_cb.toggled.connect(partial(self.statechange, self.smooth_cb.objectName()))
-        layout6.addWidget(self.smooth_cb, 1, 0, 1, 4)
-
-        smooth_order_lbl = QtWidgets.QLabel("Polynomial Order:", self.d)
-        layout6.addWidget(smooth_order_lbl, 2, 0, 1, 1)
-
-        self.smooth_order_sb = QtWidgets.QSpinBox(self.d)
-        self.smooth_order_sb.setValue(self.smooth_order)
-        self.smooth_order_sb.setDisabled(not self.smooth)
-        self.smooth_order_sb.setRange(1, 99)
-        layout6.addWidget(self.smooth_order_sb, 2, 1, 1, 1)
-
-        smooth_window_lbl = QtWidgets.QLabel("Window Length:", self.d)
-        layout6.addWidget(smooth_window_lbl, 2, 2, 1, 1)
-
-        self.smooth_window_sb = QtWidgets.QSpinBox(self.d)
-        self.smooth_window_sb.setValue(self.smooth_window)
-        self.smooth_window_sb.setDisabled(not self.smooth)
-        self.smooth_window_sb.setRange(1, 99999)
-        layout6.addWidget(self.smooth_window_sb, 2, 3, 1, 1)
-
-        self.interpolate_cb = QtWidgets.QCheckBox("Interpolate", self.d)
-        self.interpolate_cb.setObjectName('5')
-        self.interpolate_cb.setChecked(self.interpolate)
-        self.interpolate_cb.toggled.connect(partial(self.statechange, self.interpolate_cb.objectName()))
-        layout6.addWidget(self.interpolate_cb, 3, 0, 1, 4)
-
-        self.interpolate_le = QtWidgets.QLineEdit(str(self.interpolate_val), self.d)
-        self.interpolate_le.setDisabled(not self.interpolate)
-        self.interpolate_le.setMaxLength(8)
-        self.interpolate_le.setValidator(
-            QtGui.QRegExpValidator(QtCore.QRegExp("(?=\.\d|\d)(?:\d+)?(?:\.?\d*)(?:[eE][+-]?\d+)?")))
-        self.interpolate_le.textChanged.connect(partial(self.textchange))
-        layout6.addWidget(self.interpolate_le, 4, 0, 1, 1)
-
-        interpolate_lbl = QtWidgets.QLabel("(Unit depends on the coordinates unit)", self.d)
-        layout6.addWidget(interpolate_lbl, 4, 1, 1, 3)
-
-        # Separation line
-        line3 = QtWidgets.QFrame(self.d)
-        line3.setFrameShape(QtWidgets.QFrame.HLine)
-        line3.setFrameShadow(QtWidgets.QFrame.Sunken)
-        layout6.addWidget(line3, 5, 0, 1, 4)
-
-        # Invert axes options
-        invert_lbl = QtWidgets.QLabel("Invert Axis Options:", self.d)
-        layout7.addWidget(invert_lbl, 0, 0, 1, 3)
-
-        self.x_cb = QtWidgets.QCheckBox("Invert X-axis", self.d)
-        self.x_cb.setChecked(self.invert_x)
-        layout7.addWidget(self.x_cb, 1, 0, 1, 1)
-
-        self.y_cb = QtWidgets.QCheckBox("Invert Y-axis", self.d)
-        self.y_cb.setChecked(self.invert_y)
-        layout7.addWidget(self.y_cb, 1, 1, 1, 1)
-
-        self.z_cb = QtWidgets.QCheckBox("Invert Z-axis", self.d)
-        self.z_cb.setChecked(self.invert_z)
-        layout7.addWidget(self.z_cb, 1, 2, 1, 1)
-
-        # Separation line
-        line4 = QtWidgets.QFrame(self.d)
-        line4.setFrameShape(QtWidgets.QFrame.HLine)
-        line4.setFrameShadow(QtWidgets.QFrame.Sunken)
-        layout7.addWidget(line4, 2, 0, 1, 3)
+        self.fileinfo_tab.okbtn_status_change.connect(self.okbtn_status)
 
         # OK button
         self.ok_btn = QtWidgets.QPushButton("OK", self.d)
         self.ok_btn.setDefault(True)
         self.ok_btn.setDisabled(True)
         self.ok_btn.clicked.connect(partial(self.ok))
-        layout8.addWidget(self.ok_btn)
+        layout1.addWidget(self.ok_btn)
 
         # Cancel button
         cancel_btn = QtWidgets.QPushButton("Cancel", self.d)
         cancel_btn.clicked.connect(self.d.close)
-        layout8.addWidget(cancel_btn)
+        layout1.addWidget(cancel_btn)
 
         self.d.exec_()
 
-    def textchange(self):
-        # Set OK button enable/disable
-        if len(self.file_le.text()) > 0 and len(self.interpolate_le.text()) > 0 and len(self.header_le.text()) > 0 and \
-                len(self.col_x_le.text()) > 0 and len(self.col_y_le.text()) > 0 and len(self.col_z_le.text()) > 0 and \
-                self.interpolate_le.text() != '0' and self.interpolate_le.text()[-1] != ".":
-            if len(self.ref_file_le1.text()) > 0:
-                if len(self.ref_header_le.text()) > 0 and len(self.ref_col_x_le.text()) > 0 and \
-                        len(self.ref_col_y_le.text()) > 0 and len(self.ref_col_z_le.text()) > 0:
-                    self.ok_btn.setDisabled(False)
-                else:
-                    self.ok_btn.setDisabled(True)
-            else:
-                self.ok_btn.setDisabled(False)
+    def okbtn_status(self):
+        if len(self.fileinfo_tab.file_le.text()) > 0:
+            self.ok_btn.setDisabled(False)
         else:
             self.ok_btn.setDisabled(True)
-
-        # Set if the options for reference file input should be available
-        if len(self.ref_file_le1.text()) > 0:
-            self.ref_file_le2.setDisabled(False)
-            self.ref_file_btn2.setDisabled(False)
-            self.ref_header_cb.setDisabled(False)
-            self.ref_header_le.setDisabled(not self.ref_header_cb.isChecked())
-            self.ref_col_x_le.setDisabled(False)
-            self.ref_col_y_le.setDisabled(False)
-            self.ref_col_z_le.setDisabled(False)
-        else:
-            self.ref_file_le2.setDisabled(True)
-            self.ref_file_btn2.setDisabled(True)
-            self.ref_header_cb.setDisabled(True)
-            self.ref_header_le.setDisabled(True)
-            self.ref_col_x_le.setDisabled(True)
-            self.ref_col_y_le.setDisabled(True)
-            self.ref_col_z_le.setDisabled(True)
-
-        # Set if build reference object should be available
-        if len(self.ref_file_le1.text()) > 0 and len(self.ref_file_le2.text()) > 0:
-            self.build_ref_cb.setDisabled(False)
-            self.build_ref_radius1_sb.setDisabled(not self.build_ref_cb.isChecked())
-            self.build_ref_radius2_sb.setDisabled(not self.build_ref_cb.isChecked())
-        else:
-            self.build_ref_cb.setDisabled(True)
-            self.build_ref_radius1_sb.setDisabled(True)
-            self.build_ref_radius2_sb.setDisabled(True)
-
-    def statechange(self, cb_no):
-        if cb_no == '1':
-            self.header_le.setEnabled(not self.header_le.isEnabled())
-            if not self.header_cb.isChecked() and len(self.header_le.text()) == 0:
-                self.header_le.setText("1")
-        elif cb_no == '2':
-            self.ref_header_le.setEnabled(not self.ref_header_le.isEnabled())
-            if not self.ref_header_cb.isChecked() and len(self.ref_header_le.text()) == 0:
-                self.ref_header_le.setText("1")
-        elif cb_no == '3':
-            self.build_ref_radius1_sb.setEnabled(self.build_ref_cb.isChecked())
-            self.build_ref_radius2_sb.setEnabled(self.build_ref_cb.isChecked())
-        elif cb_no == '4':
-            self.smooth_order_sb.setEnabled(not self.smooth_order_sb.isEnabled())
-            self.smooth_window_sb.setEnabled(not self.smooth_window_sb.isEnabled())
-        elif cb_no == '5':
-            self.interpolate_le.setEnabled(not self.interpolate_le.isEnabled())
-            if not self.interpolate_cb.isChecked() and len(self.interpolate_le.text()) == 0:
-                self.interpolate_le.setText(str(self.interpolate_val))
-
-    def selectfile(self, le):
-        file_path = QtWidgets.QFileDialog.getOpenFileName(None, "Select File",
-                                                          filter="CSV Files (*.csv)",
-                                                          options=QtWidgets.QFileDialog.DontUseNativeDialog)
-        if le == '1':
-            if file_path[0] != "":
-                self.file_le.setText(file_path[0])
-        elif le == '2':
-            if file_path[0] != "":
-                self.ref_file_le1.setText(file_path[0])
-        elif le == '3':
-            if file_path[0] != "":
-                self.ref_file_le2.setText(file_path[0])
 
     # TODO: file-breaking prevention (equal rows, data type)
     # TODO: header check
@@ -1239,14 +919,16 @@ class OpenFile(QtWidgets.QDialog):
         # Initialize error message
         error_string = ""
 
-        if self.smooth_cb.isChecked():
+        # Error about smoothing
+        if self.preprocessing_tab.smooth_cb.isChecked():
             # Check if smoothing polynomial order is smaller than window length
-            if int(self.smooth_order_sb.value()) >= int(self.smooth_window_sb.value()):
+            if int(self.preprocessing_tab.smooth_order_sb.value()) >= int(
+                    self.preprocessing_tab.smooth_window_sb.value()):
                 valid = False
                 error_string += "- Smoothing polynomial order must be smaller than window length <br>"
 
             # Check if smoothing window length is an odd number
-            if int(self.smooth_window_sb.value()) % 2 == 0:
+            if int(self.preprocessing_tab.smooth_window_sb.value()) % 2 == 0:
                 valid = False
                 error_string += "- Smoothing window length must be an odd number <br>"
 
@@ -1257,57 +939,432 @@ class OpenFile(QtWidgets.QDialog):
 
         if self.valid:
             # Set files
-            self.file_path = self.file_le.text()
-            self.file_path_ref1 = self.ref_file_le1.text()
-            self.file_path_ref2 = self.ref_file_le2.text()
+            self.file_path = self.fileinfo_tab.file_le.text()
+            self.file_path_ref1 = self.reference_tab.ref_file_le1.text()
+            self.file_path_ref2 = self.reference_tab.ref_file_le2.text()
 
             # Get header
-            self.header = int(self.header_le.text()) if self.header_cb.isChecked() else None
-            self.header_ref = int(self.ref_header_le.text()) if self.ref_header_cb.isChecked() else None
+            self.header = int(self.fileinfo_tab.header_sb.text()) if self.fileinfo_tab.header_cb.isChecked() else None
+            self.header_ref = int(
+                self.reference_tab.ref_header_sb.text()) if self.reference_tab.ref_header_cb.isChecked() else None
 
             # Get column numbers
-            self.col_x = int(self.col_x_le.text())
-            self.col_y = int(self.col_y_le.text())
-            self.col_z = int(self.col_z_le.text())
-            self.col_x_ref = int(self.ref_col_x_le.text())
-            self.col_y_ref = int(self.ref_col_y_le.text())
-            self.col_z_ref = int(self.ref_col_z_le.text())
+            self.col_x = int(self.fileinfo_tab.col_x_sb.value())
+            self.col_y = int(self.fileinfo_tab.col_y_sb.value())
+            self.col_z = int(self.fileinfo_tab.col_z_sb.value())
+            self.col_x_ref = int(self.reference_tab.ref_col_x_sb.value())
+            self.col_y_ref = int(self.reference_tab.ref_col_y_sb.value())
+            self.col_z_ref = int(self.reference_tab.ref_col_z_sb.value())
 
             # Get build object parameters
-            self.build_ref_obj = self.build_ref_cb.isChecked()
-            self.build_ref_radius1 = self.build_ref_radius1_sb.value()
-            self.build_ref_radius2 = self.build_ref_radius2_sb.value()
+            self.build_ref_obj = self.reference_tab.build_ref_cb.isChecked()
+            self.build_ref_radius1 = self.reference_tab.build_ref_radius1_sb.value()
+            self.build_ref_radius2 = self.reference_tab.build_ref_radius2_sb.value()
 
             # Check if the smoothing option is checked
-            if self.smooth_cb.isChecked():
+            if self.preprocessing_tab.smooth_cb.isChecked():
                 self.smooth = True
-                self.smooth_order = int(self.smooth_order_sb.value())
-                self.smooth_window = int(self.smooth_window_sb.value())
+                self.smooth_order = int(self.preprocessing_tab.smooth_order_sb.value())
+                self.smooth_window = int(self.preprocessing_tab.smooth_window_sb.value())
             else:
                 self.smooth = False
                 self.smooth_order = 2
                 self.smooth_window = 7
 
             # Check if the interpolating option is checked
-            if self.interpolate_cb.isChecked():
+            if self.preprocessing_tab.interpolate_cb.isChecked():
                 self.interpolate = True
-                self.interpolate_val = float(self.interpolate_le.text())
+                self.interpolate_val = float(self.preprocessing_tab.interpolate_sb.value())
             else:
                 self.interpolate = False
                 self.interpolate_val = 0.5
 
             # Check if axes need to be inverted
-            self.invert_x = self.x_cb.isChecked()
-            self.invert_y = self.y_cb.isChecked()
-            self.invert_z = self.z_cb.isChecked()
+            self.invert_x = self.fileinfo_tab.x_cb.isChecked()
+            self.invert_y = self.fileinfo_tab.y_cb.isChecked()
+            self.invert_z = self.fileinfo_tab.z_cb.isChecked()
 
             # Close dialog
             self.d.close()
         else:
+            error_string = "Please address the following issue(s):<br><br>" + error_string
+
             error_msg = QtWidgets.QErrorMessage(self.d)
+            error_msg.setFixedSize(350, 250)
             error_msg.setWindowModality(QtCore.Qt.WindowModal)
             error_msg.setWindowTitle("Error")
             error_msg.showMessage(error_string)
+
+
+class FileInfoWidget(QtWidgets.QWidget):
+    # Signal for OK button status change
+    okbtn_status_change = QtCore.pyqtSignal()
+
+    def __init__(self, header, col_x, col_y, col_z, invert_x, invert_y, invert_z):
+        super().__init__()
+
+        # Set reference variables
+        self.header = header
+        self.col_x = col_x
+        self.col_y = col_y
+        self.col_z = col_z
+        self.invert_x = invert_x
+        self.invert_y = invert_y
+        self.invert_z = invert_z
+
+        # Set main layout of the tab
+        main_layout = QtWidgets.QVBoxLayout(self)
+        main_layout.setAlignment(QtCore.Qt.AlignTop)
+
+        # Create layouts inside main layout
+        layout1 = QtWidgets.QGridLayout()
+        layout2 = QtWidgets.QGridLayout()
+        layout3 = QtWidgets.QGridLayout()
+        main_layout.addLayout(layout1)
+        main_layout.addLayout(layout2)
+        main_layout.addLayout(layout3)
+
+        # Select files
+        file_lbl = QtWidgets.QLabel("Select file to be opened:", self)
+        layout1.addWidget(file_lbl, 0, 0, 1, 2)
+
+        self.file_le = QtWidgets.QLineEdit("", self)
+        self.file_le.textChanged.connect(partial(self.textchange))
+        layout1.addWidget(self.file_le, 1, 0, 1, 1)
+
+        file_btn = QtWidgets.QPushButton("...", self)
+        file_btn.clicked.connect(partial(self.selectfile))
+        layout1.addWidget(file_btn, 1, 1, 1, 1)
+
+        # Select header and columns
+        fo_lbl = QtWidgets.QLabel("File Options: (Index starts at 1)", self)
+        layout2.addWidget(fo_lbl, 0, 0, 1, 6)
+
+        self.header_cb = QtWidgets.QCheckBox("Header? ", self)
+        self.header_cb.setChecked(False if self.header is None else True)
+        self.header_cb.stateChanged.connect(partial(self.statechange))
+        layout2.addWidget(self.header_cb, 1, 0, 1, 2)
+
+        header_lbl = QtWidgets.QLabel("Row: ", self)
+        layout2.addWidget(header_lbl, 1, 2, 1, 1)
+
+        self.header_sb = QtWidgets.QSpinBox(self)
+        self.header_sb.setValue(1 if self.header is None else self.header)
+        self.header_sb.setDisabled(not self.header_cb.isChecked())
+        self.header_sb.setRange(1, 999)
+        layout2.addWidget(self.header_sb, 1, 3, 1, 1)
+
+        col_x_lbl = QtWidgets.QLabel("X-axis (L/R): ", self)
+        layout2.addWidget(col_x_lbl, 2, 0, 1, 1)
+
+        self.col_x_sb = QtWidgets.QSpinBox(self)
+        self.col_x_sb.setValue(self.col_x)
+        self.col_x_sb.setRange(1, 999)
+        layout2.addWidget(self.col_x_sb, 2, 1, 1, 1)
+
+        col_y_lbl = QtWidgets.QLabel("Y-axis (F/B): ", self)
+        layout2.addWidget(col_y_lbl, 2, 2, 1, 1)
+
+        self.col_y_sb = QtWidgets.QSpinBox(self)
+        self.col_y_sb.setValue(self.col_y)
+        self.col_y_sb.setRange(1, 999)
+        layout2.addWidget(self.col_y_sb, 2, 3, 1, 1)
+
+        col_z_lbl = QtWidgets.QLabel("Z-axis (U/D): ", self)
+        layout2.addWidget(col_z_lbl, 2, 4, 1, 1)
+
+        self.col_z_sb = QtWidgets.QSpinBox(self)
+        self.col_z_sb.setValue(self.col_z)
+        self.col_z_sb.setRange(1, 999)
+        layout2.addWidget(self.col_z_sb, 2, 5, 1, 1)
+
+        # Separation line
+        line1 = QtWidgets.QFrame(self)
+        line1.setFrameShape(QtWidgets.QFrame.HLine)
+        line1.setFrameShadow(QtWidgets.QFrame.Sunken)
+        layout2.addWidget(line1, 3, 0, 1, 6)
+
+        # Invert axes options
+        invert_lbl = QtWidgets.QLabel("Invert Axis Options:", self)
+        layout3.addWidget(invert_lbl, 0, 0, 1, 3)
+
+        self.x_cb = QtWidgets.QCheckBox("Invert X-axis", self)
+        self.x_cb.setChecked(self.invert_x)
+        layout3.addWidget(self.x_cb, 1, 0, 1, 1)
+
+        self.y_cb = QtWidgets.QCheckBox("Invert Y-axis", self)
+        self.y_cb.setChecked(self.invert_y)
+        layout3.addWidget(self.y_cb, 1, 1, 1, 1)
+
+        self.z_cb = QtWidgets.QCheckBox("Invert Z-axis", self)
+        self.z_cb.setChecked(self.invert_z)
+        layout3.addWidget(self.z_cb, 1, 2, 1, 1)
+
+    def selectfile(self):
+        file_path = QtWidgets.QFileDialog.getOpenFileName(None, "Select File",
+                                                          filter="CSV Files (*.csv)",
+                                                          options=QtWidgets.QFileDialog.DontUseNativeDialog)
+        if file_path[0] != "":
+            self.file_le.setText(file_path[0])
+
+    def statechange(self):
+        self.header_sb.setEnabled(not self.header_sb.isEnabled())
+
+    def textchange(self):
+        # Emit signal to change OK button status
+        self.okbtn_status_change.emit()
+
+
+class ReferenceWidget(QtWidgets.QWidget):
+
+    def __init__(self, header_ref, col_x_ref, col_y_ref, col_z_ref,
+                 build_ref_obj, build_ref_radius1, build_ref_radius2):
+        super().__init__()
+
+        # Set reference variables
+        self.header_ref = header_ref
+        self.col_x_ref = col_x_ref
+        self.col_y_ref = col_y_ref
+        self.col_z_ref = col_z_ref
+        self.build_ref_obj = build_ref_obj
+        self.build_ref_radius1 = build_ref_radius1
+        self.build_ref_radius2 = build_ref_radius2
+
+        # Set main layout of the tab
+        main_layout = QtWidgets.QVBoxLayout(self)
+        main_layout.setAlignment(QtCore.Qt.AlignTop)
+
+        # Create layouts inside main layout
+        layout1 = QtWidgets.QGridLayout()
+        layout2 = QtWidgets.QGridLayout()
+        layout3 = QtWidgets.QGridLayout()
+        main_layout.addLayout(layout1)
+        main_layout.addLayout(layout2)
+        main_layout.addLayout(layout3)
+
+        # Optional file
+        ref_file_lbl = QtWidgets.QLabel("Select reference sensor file(s) to be opened (Optional):", self)
+        layout1.addWidget(ref_file_lbl, 0, 0, 1, 2)
+
+        self.ref_file_le1 = QtWidgets.QLineEdit("", self)
+        self.ref_file_le1.textChanged.connect(partial(self.textchange))
+        layout1.addWidget(self.ref_file_le1, 1, 0, 1, 1)
+
+        self.ref_file_btn1 = QtWidgets.QPushButton("...", self)
+        self.ref_file_btn1.setObjectName("1")
+        self.ref_file_btn1.clicked.connect(partial(self.selectfile, self.ref_file_btn1.objectName()))
+        layout1.addWidget(self.ref_file_btn1, 1, 1, 1, 1)
+
+        self.ref_file_le2 = QtWidgets.QLineEdit("", self)
+        self.ref_file_le2.setDisabled(True)
+        self.ref_file_le2.textChanged.connect(partial(self.textchange))
+        layout1.addWidget(self.ref_file_le2, 2, 0, 1, 1)
+
+        self.ref_file_btn2 = QtWidgets.QPushButton("...", self)
+        self.ref_file_btn2.setObjectName("2")
+        self.ref_file_btn2.setDisabled(True)
+        self.ref_file_btn2.clicked.connect(partial(self.selectfile, self.ref_file_btn2.objectName()))
+        layout1.addWidget(self.ref_file_btn2, 2, 1, 1, 1)
+
+        # Select header and columns
+        ref_fo_lbl = QtWidgets.QLabel("File Options: (Index starts at 1)", self)
+        layout2.addWidget(ref_fo_lbl, 0, 0, 1, 6)
+
+        self.ref_header_cb = QtWidgets.QCheckBox("Header? ", self)
+        self.ref_header_cb.setObjectName('1')
+        self.ref_header_cb.setChecked(False if self.header_ref is None else True)
+        self.ref_header_cb.setDisabled(True)
+        self.ref_header_cb.stateChanged.connect(partial(self.statechange, self.ref_header_cb.objectName()))
+        layout2.addWidget(self.ref_header_cb, 1, 0, 1, 2)
+
+        ref_header_lbl = QtWidgets.QLabel("Row: ", self)
+        layout2.addWidget(ref_header_lbl, 1, 2, 1, 1)
+
+        self.ref_header_sb = QtWidgets.QSpinBox(self)
+        self.ref_header_sb.setValue(1 if self.header_ref is None else self.header_ref)
+        self.ref_header_sb.setDisabled(True)
+        self.ref_header_sb.setRange(1, 999)
+        layout2.addWidget(self.ref_header_sb, 1, 3, 1, 1)
+
+        ref_col_x_lbl = QtWidgets.QLabel("X-axis (L/R): ", self)
+        layout2.addWidget(ref_col_x_lbl, 2, 0, 1, 1)
+
+        self.ref_col_x_sb = QtWidgets.QSpinBox(self)
+        self.ref_col_x_sb.setValue(self.col_x_ref)
+        self.ref_col_x_sb.setDisabled(True)
+        self.ref_col_x_sb.setRange(1, 999)
+        layout2.addWidget(self.ref_col_x_sb, 2, 1, 1, 1)
+
+        ref_col_y_lbl = QtWidgets.QLabel("Y-axis (F/B): ", self)
+        layout2.addWidget(ref_col_y_lbl, 2, 2, 1, 1)
+
+        self.ref_col_y_sb = QtWidgets.QSpinBox(self)
+        self.ref_col_y_sb.setValue(self.col_y_ref)
+        self.ref_col_y_sb.setDisabled(True)
+        self.ref_col_y_sb.setRange(1, 999)
+        layout2.addWidget(self.ref_col_y_sb, 2, 3, 1, 1)
+
+        ref_col_z_lbl = QtWidgets.QLabel("Z-axis (U/D): ", self)
+        layout2.addWidget(ref_col_z_lbl, 2, 4, 1, 1)
+
+        self.ref_col_z_sb = QtWidgets.QSpinBox(self)
+        self.ref_col_z_sb.setValue(self.col_z_ref)
+        self.ref_col_z_sb.setDisabled(True)
+        self.ref_col_z_sb.setRange(1, 999)
+        layout2.addWidget(self.ref_col_z_sb, 2, 5, 1, 1)
+
+        # Separation line
+        line1 = QtWidgets.QFrame(self)
+        line1.setFrameShape(QtWidgets.QFrame.HLine)
+        line1.setFrameShadow(QtWidgets.QFrame.Sunken)
+        layout2.addWidget(line1, 3, 0, 1, 6)
+
+        # Build reference object
+        self.build_ref_cb = QtWidgets.QCheckBox("Build reference object? (Unit depends on coordinates unit)", self)
+        self.build_ref_cb.setDisabled(True)
+        self.build_ref_cb.setObjectName('2')
+        self.build_ref_cb.setChecked(self.build_ref_obj)
+        self.build_ref_cb.stateChanged.connect(partial(self.statechange, self.build_ref_cb.objectName()))
+        layout3.addWidget(self.build_ref_cb, 0, 0, 1, 2)
+
+        build_ref_lbl1 = QtWidgets.QLabel("Radius of top file's reference: ", self)
+        layout3.addWidget(build_ref_lbl1, 1, 0, 1, 1)
+
+        self.build_ref_radius1_sb = QtWidgets.QDoubleSpinBox(self)
+        self.build_ref_radius1_sb.setDisabled(True)
+        self.build_ref_radius1_sb.setValue(self.build_ref_radius1)
+        self.build_ref_radius1_sb.setDecimals(3)
+        self.build_ref_radius1_sb.setRange(0.001, 99999.999)
+        self.build_ref_radius1_sb.setSingleStep(0.001)
+        layout3.addWidget(self.build_ref_radius1_sb, 1, 1, 1, 1)
+
+        build_ref_lbl2 = QtWidgets.QLabel("Radius of bottom file's reference: ", self)
+        layout3.addWidget(build_ref_lbl2, 2, 0, 1, 1)
+
+        self.build_ref_radius2_sb = QtWidgets.QDoubleSpinBox(self)
+        self.build_ref_radius2_sb.setDisabled(True)
+        self.build_ref_radius2_sb.setValue(self.build_ref_radius2)
+        self.build_ref_radius2_sb.setDecimals(3)
+        self.build_ref_radius2_sb.setRange(0.001, 99999.999)
+        self.build_ref_radius2_sb.setSingleStep(0.001)
+        layout3.addWidget(self.build_ref_radius2_sb, 2, 1, 1, 1)
+
+    def selectfile(self, le):
+        file_path = QtWidgets.QFileDialog.getOpenFileName(None, "Select File",
+                                                          filter="CSV Files (*.csv)",
+                                                          options=QtWidgets.QFileDialog.DontUseNativeDialog)
+        if le == '1':
+            if file_path[0] != "":
+                self.ref_file_le1.setText(file_path[0])
+        if le == '2':
+            if file_path[0] != "":
+                self.ref_file_le2.setText(file_path[0])
+
+    def statechange(self, cb_no):
+        if cb_no == '1':
+            self.ref_header_sb.setEnabled(not self.ref_header_sb.isEnabled())
+        elif cb_no == '2':
+            self.build_ref_radius1_sb.setEnabled(self.build_ref_cb.isChecked())
+            self.build_ref_radius2_sb.setEnabled(self.build_ref_cb.isChecked())
+
+    def textchange(self):
+        # Set if the options for reference file input should be available
+        if len(self.ref_file_le1.text()) > 0:
+            self.ref_file_le2.setDisabled(False)
+            self.ref_file_btn2.setDisabled(False)
+            self.ref_header_cb.setDisabled(False)
+            self.ref_header_sb.setDisabled(not self.ref_header_cb.isChecked())
+            self.ref_col_x_sb.setDisabled(False)
+            self.ref_col_y_sb.setDisabled(False)
+            self.ref_col_z_sb.setDisabled(False)
+        else:
+            self.ref_file_le2.setDisabled(True)
+            self.ref_file_btn2.setDisabled(True)
+            self.ref_header_cb.setDisabled(True)
+            self.ref_header_sb.setDisabled(True)
+            self.ref_col_x_sb.setDisabled(True)
+            self.ref_col_y_sb.setDisabled(True)
+            self.ref_col_z_sb.setDisabled(True)
+
+        # Set if build reference object should be available
+        if len(self.ref_file_le1.text()) > 0 and len(self.ref_file_le2.text()) > 0:
+            self.build_ref_cb.setDisabled(False)
+            self.build_ref_radius1_sb.setDisabled(not self.build_ref_cb.isChecked())
+            self.build_ref_radius2_sb.setDisabled(not self.build_ref_cb.isChecked())
+        else:
+            self.build_ref_cb.setDisabled(True)
+            self.build_ref_radius1_sb.setDisabled(True)
+            self.build_ref_radius2_sb.setDisabled(True)
+
+
+class PreprocessingWidget(QtWidgets.QWidget):
+
+    def __init__(self, smooth, smooth_order, smooth_window, interpolate, interpolate_val):
+        super().__init__()
+
+        # Set reference variables
+        self.smooth = smooth
+        self.smooth_order = smooth_order
+        self.smooth_window = smooth_window
+        self.interpolate = interpolate
+        self.interpolate_val = interpolate_val
+
+        # Set main layout of the tab
+        main_layout = QtWidgets.QVBoxLayout(self)
+        main_layout.setAlignment(QtCore.Qt.AlignTop)
+
+        # Create layouts inside main layout
+        layout1 = QtWidgets.QGridLayout()
+        main_layout.addLayout(layout1)
+
+        # Preprocessing options
+        self.smooth_cb = QtWidgets.QCheckBox("Smooth", self)
+        self.smooth_cb.setObjectName('1')
+        self.smooth_cb.setChecked(self.smooth)
+        self.smooth_cb.toggled.connect(partial(self.statechange, self.smooth_cb.objectName()))
+        layout1.addWidget(self.smooth_cb, 0, 0, 1, 4)
+
+        smooth_order_lbl = QtWidgets.QLabel("Polynomial Order:", self)
+        layout1.addWidget(smooth_order_lbl, 1, 0, 1, 1)
+
+        self.smooth_order_sb = QtWidgets.QSpinBox(self)
+        self.smooth_order_sb.setValue(self.smooth_order)
+        self.smooth_order_sb.setDisabled(not self.smooth)
+        self.smooth_order_sb.setRange(1, 99)
+        layout1.addWidget(self.smooth_order_sb, 1, 1, 1, 1)
+
+        smooth_window_lbl = QtWidgets.QLabel("Window Length:", self)
+        layout1.addWidget(smooth_window_lbl, 1, 2, 1, 1)
+
+        self.smooth_window_sb = QtWidgets.QSpinBox(self)
+        self.smooth_window_sb.setValue(self.smooth_window)
+        self.smooth_window_sb.setDisabled(not self.smooth)
+        self.smooth_window_sb.setRange(1, 99999)
+        layout1.addWidget(self.smooth_window_sb, 1, 3, 1, 1)
+
+        self.interpolate_cb = QtWidgets.QCheckBox("Interpolate", self)
+        self.interpolate_cb.setObjectName('2')
+        self.interpolate_cb.setChecked(self.interpolate)
+        self.interpolate_cb.toggled.connect(partial(self.statechange, self.interpolate_cb.objectName()))
+        layout1.addWidget(self.interpolate_cb, 2, 0, 1, 4)
+
+        self.interpolate_sb = QtWidgets.QDoubleSpinBox(self)
+        self.interpolate_sb.setValue(self.interpolate_val)
+        self.interpolate_sb.setDecimals(3)
+        self.interpolate_sb.setRange(0.001, 99999.999)
+        self.interpolate_sb.setSingleStep(0.001)
+        self.interpolate_sb.setDisabled(not self.interpolate)
+        layout1.addWidget(self.interpolate_sb, 3, 0, 1, 1)
+
+        interpolate_lbl = QtWidgets.QLabel("(Unit depends on coordinates unit)", self)
+        layout1.addWidget(interpolate_lbl, 3, 1, 1, 3)
+
+    def statechange(self, cb_no):
+        if cb_no == '1':
+            self.smooth_order_sb.setEnabled(not self.smooth_order_sb.isEnabled())
+            self.smooth_window_sb.setEnabled(not self.smooth_window_sb.isEnabled())
+        elif cb_no == '2':
+            self.interpolate_sb.setEnabled(not self.interpolate_sb.isEnabled())
 
 
 #######################
@@ -1635,17 +1692,17 @@ class Settings:
 
         # Set dialog layout
         layout = QtWidgets.QGridLayout(self.d)
-        layout.addWidget(tab_widget, 1, 1, 1, 2)
+        layout.addWidget(tab_widget, 0, 0, 1, 2)
 
         # Create buttons to submit or cancel
         self.okbtn = QtWidgets.QPushButton("OK", self.d)
         self.okbtn.setDefault(True)
         self.okbtn.clicked.connect(self.ok)
-        layout.addWidget(self.okbtn, 2, 1, 1, 1)
+        layout.addWidget(self.okbtn, 1, 0, 1, 1)
 
         cancelbtn = QtWidgets.QPushButton("Cancel", self.d)
         cancelbtn.clicked.connect(self.d.close)
-        layout.addWidget(cancelbtn, 2, 2, 1, 1)
+        layout.addWidget(cancelbtn, 1, 1, 1, 1)
 
         self.d.exec_()
 
