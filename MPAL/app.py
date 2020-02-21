@@ -588,12 +588,15 @@ class App(QtWidgets.QMainWindow):
 
     def trajectory(self):
         traj = Trajectory(self.analysis.x, self.analysis.y, self.analysis.z,
-                          self.openfile.invert_x, self.openfile.invert_y, self.openfile.invert_z)
+                          self.openfile.invert_x, self.openfile.invert_y, self.openfile.invert_z,
+                          dpi=self.settings.dpi)
 
     def open_settings(self):
         self.settings.change()
         if self.operating:
             if self.settings.rerun: self.rerun()
+            # TODO: Update plot dpi from settings
+            # if self.settings.plot_rerun: self.m.fig.set_dpi(self.settings.dpi)
 
     # Re-run analysis with new thresholds from settings
     def rerun(self):
@@ -1000,8 +1003,8 @@ class FileInfoWidget(QtWidgets.QWidget):
     # Signal for OK button status change
     okbtn_status_change = QtCore.pyqtSignal()
 
-    def __init__(self, header, col_x, col_y, col_z, invert_x, invert_y, invert_z):
-        super().__init__()
+    def __init__(self, header, col_x, col_y, col_z, invert_x, invert_y, invert_z, parent=None):
+        super(FileInfoWidget, self).__init__(parent)
 
         # Set reference variables
         self.header = header
@@ -1118,8 +1121,8 @@ class FileInfoWidget(QtWidgets.QWidget):
 class ReferenceWidget(QtWidgets.QWidget):
 
     def __init__(self, header_ref, col_x_ref, col_y_ref, col_z_ref,
-                 build_ref_obj, build_ref_radius1, build_ref_radius2):
-        super().__init__()
+                 build_ref_obj, build_ref_radius1, build_ref_radius2, parent=None):
+        super(ReferenceWidget, self).__init__(parent)
 
         # Set reference variables
         self.header_ref = header_ref
@@ -1299,8 +1302,8 @@ class ReferenceWidget(QtWidgets.QWidget):
 
 class PreprocessingWidget(QtWidgets.QWidget):
 
-    def __init__(self, smooth, smooth_order, smooth_window, interpolate, interpolate_val):
-        super().__init__()
+    def __init__(self, smooth, smooth_order, smooth_window, interpolate, interpolate_val, parent=None):
+        super(PreprocessingWidget, self).__init__(parent)
 
         # Set reference variables
         self.smooth = smooth
@@ -1688,7 +1691,7 @@ class Settings:
         # Tab widget
         tab_widget = QtWidgets.QTabWidget()
         tab_widget.addTab(self.analysistab, "Analysis")
-        tab_widget.addTab(self.plottab, "Plot")
+        tab_widget.addTab(self.plottab, "Plot (WIP)")
 
         # Set dialog layout
         layout = QtWidgets.QGridLayout(self.d)
@@ -1707,31 +1710,44 @@ class Settings:
         self.d.exec_()
 
     def ok(self):
+        any_change = False
+
+        # Check if inputs are valid
         if len(self.analysistab.xturn_le.text()) > 0 and len(self.analysistab.yturn_le.text()) > 0 and \
                 len(self.analysistab.zturn_le.text()) > 0 and len(self.analysistab.md_le.text()) > 0 and \
                 len(self.plottab.dpi_le.text()) > 0 and \
                 float(self.analysistab.xturn_le.text()) <= 90 and float(self.analysistab.yturn_le.text()) <= 90 and \
                 float(self.analysistab.zturn_le.text()) <= 90:
+
+            # Check if thresholds have changed
             if self.x_threshold == float(self.analysistab.xturn_le.text()) and \
                     self.y_threshold == float(self.analysistab.yturn_le.text()) and \
                     self.z_threshold == float(self.analysistab.zturn_le.text()) and \
                     self.main_direction_threshold == int(self.analysistab.md_le.text()):
-                changed = False
+                self.rerun = False
             else:
-                changed = True
+                any_change = True
                 self.x_threshold = float(self.analysistab.xturn_le.text())
                 self.y_threshold = float(self.analysistab.yturn_le.text())
                 self.z_threshold = float(self.analysistab.zturn_le.text())
                 self.main_direction_threshold = int(self.analysistab.md_le.text())
-            self.dpi = int(self.plottab.dpi_le.text())
-
-            if changed:
                 reply = QtWidgets.QMessageBox.question(self.d, "Re-run Analysis?",
                                                        "Do you wish to re-run the analysis with new thresholds?<br>"
                                                        "(Warning: ALL CHANGES WILL BE LOST!)",
                                                        QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
                                                        QtWidgets.QMessageBox.No)
                 self.rerun = True if reply == QtWidgets.QMessageBox.Yes else False
+
+            # Check if plot settings have changed
+            if self.dpi == int(self.plottab.dpi_le.text()):
+                self.plot_rerun = False
+            else:
+                any_change = True
+                self.dpi = int(self.plottab.dpi_le.text())
+                self.plot_rerun = True
+
+            # Rewrite settings.config
+            if any_change:
                 new_settings = "# DO NOT CHANGE THE CONTENT OF THIS FILE UNLESS YOU KNOW WHAT YOU ARE DOING!!!\n" \
                                "# IF ERROR OCCURS BECAUSE OF THIS FILE, SIMPLY DELETE THIS FILE THEN RUN THE APPLICATION TO RESET TO DEFAULT SETTINGS\n\n" \
                                "# Analysis settings parameters\n" \
@@ -1756,6 +1772,7 @@ class AnalysisSettingsWidget(QtWidgets.QWidget):
     def __init__(self, x_threshold, y_threshold, z_threshold, main_direction_threshold, parent=None):
         super(AnalysisSettingsWidget, self).__init__(parent)
         layout = QtWidgets.QGridLayout(self)
+        layout.setAlignment(QtCore.Qt.AlignTop)
 
         # Create class attributes
         self.x_threshold = x_threshold
@@ -1802,12 +1819,13 @@ class PlotSettingsWidget(QtWidgets.QWidget):
     def __init__(self, dpi, parent=None):
         super(PlotSettingsWidget, self).__init__(parent)
         layout = QtWidgets.QGridLayout(self)
+        layout.setAlignment(QtCore.Qt.AlignTop)
 
         # Create class attributes
         self.dpi = dpi
 
         # Create labels and line-edit for entries
-        dpi_lbl = QtWidgets.QLabel("Plot dpi:\n(Default: 60)", self)
+        dpi_lbl = QtWidgets.QLabel("Plot DPI:\n(Default: 60)", self)
         layout.addWidget(dpi_lbl, 1, 1, 1, 1)
 
         self.dpi_le = QtWidgets.QLineEdit(str(self.dpi), self)
@@ -1821,7 +1839,7 @@ class PlotSettingsWidget(QtWidgets.QWidget):
 class PlotCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=3, height=2, dpi=60):
-        self.fig = plt.figure(figsize=(width, height), dpi=40)
+        self.fig = plt.figure(figsize=(width, height), dpi=dpi)
         super(FigureCanvas, self).__init__(self.fig)
         self.axes = self.fig.add_subplot(111, projection='3d')
         self.axes.set_aspect("equal")
@@ -1930,7 +1948,7 @@ class PlotCanvas(FigureCanvas):
 #######################
 class Trajectory(QtWidgets.QDialog):
 
-    def __init__(self, x, y, z, invert_x=False, invert_y=False, invert_z=False):
+    def __init__(self, x, y, z, invert_x=False, invert_y=False, invert_z=False, dpi=60):
         super().__init__()
 
         # Create attributes
@@ -1948,7 +1966,7 @@ class Trajectory(QtWidgets.QDialog):
         self.setWindowModality(QtCore.Qt.NonModal)
 
         # Create figure elements
-        self.fig = plt.figure(figsize=(3, 2), dpi=60)
+        self.fig = plt.figure(figsize=(3, 2), dpi=dpi)
 
         self.canvas = FigureCanvas(self.fig)
         FigureCanvas.setSizePolicy(self.canvas, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
