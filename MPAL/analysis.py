@@ -78,13 +78,13 @@ class Analysis:
                             interpolate=interpolate, interdist=interdist)
 
         # Get level-1 hash
-        self.lvl1hash()
+        self.get_lvl1hash()
 
         # Get level-2 hash
-        self.lvl2hash()
+        self.get_lvl2hash()
 
         # Get level-3 hash
-        self.lvl3hash()
+        self.get_lvl3hash()
 
         # Get post-interpolated to pre-interpolated conversion of data points
         self.get_prepost_idx()
@@ -103,7 +103,7 @@ class Analysis:
         self.z = self.X[:, 2]
 
     # Get level-1 hash string and parameters of each node
-    def lvl1hash(self):
+    def get_lvl1hash(self):
         # Initialize variables
         self.lvl1hash = [''] * 3
         self.parameters = np.empty((len(self.x), 9), dtype=object)
@@ -160,7 +160,7 @@ class Analysis:
         self.parameters[:, 6:] = k
 
     # Get level-2 hash strings and hash frame
-    def lvl2hash(self):
+    def get_lvl2hash(self):
         # Initialize variables
         self.lvl2hash = [''] * 3
         self.lvl2hashframe = [0]
@@ -185,7 +185,7 @@ class Analysis:
         self.lvl2hash[2] += '/'
 
     # Get level-3 hash string and hash frame
-    def lvl3hash(self):
+    def get_lvl3hash(self):
         # Initialize hash and hash frame variables
         self.lvl3hash = []
         self.lvl3hashframe = []
@@ -345,10 +345,10 @@ class Analysis:
 
     # Re-run analysis
     def rerun(self):
-        self._lvl1hash()
-        self._lvl2hash()
-        self._lvl3hash()
-        self._get_prepost_idx()
+        self.get_lvl1hash()
+        self.get_lvl2hash()
+        self.get_lvl3hash()
+        self.get_prepost_idx()
         self.plot = Plot(self.x, self.y, self.z, self.lvl2hashframe, self.lvl3hashframe)
 
 
