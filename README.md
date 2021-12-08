@@ -29,4 +29,4 @@ Clone the repository using `git clone https://github.com/bbl-brainbehaviorlab/MP
 2. Enter `python3 app.py` to run the application.
 
 ## To cite this
-Lo, C., Chu, S., Penney, T., & Schirmer, A. (2021). 3D Hand-Motion Tracking and Bottom-Up Classification Sheds Light on the Physical Properties of Gentle Stroking. Neuroscience, 464, 90-104. https://doi.org/10.1016/j.neuroscience.2020.09.037
+Lo, C., Chu, S., Penney, T., & Schirmer, A. (2021). 3D Hand-Motion Tracking and Bottom-Up Classification Sheds Light on the Physical Properties of Gentle Stroking. *Neuroscience*, *464*, 90-104. https://doi.org/10.1016/j.neuroscience.2020.09.037
