@@ -8,7 +8,7 @@ setuptools.setup(
     description="Motion Pattern Analysis (MPAL): A Python Open Source Application for the Trajectory Analysis of Hand Motion",
     long_description=open("README.md").read(),
     install_requires=[
-        "numpy == 1.17.2",
+        "numpy == 1.22.0",
         "scipy == 1.3.1",
         "pandas == 0.25.1",
         "matplotlib == 3.0.3",
