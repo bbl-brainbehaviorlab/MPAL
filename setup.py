@@ -9,7 +9,7 @@ setuptools.setup(
     long_description=open("README.md").read(),
     install_requires=[
         "numpy == 1.17.2",
-        "scipy == 1.3.1",
+        "scipy == 1.10.0",
         "pandas == 0.25.1",
         "matplotlib == 3.0.3",
         "PyQt5 == 5.13.0",
